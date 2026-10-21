@@ -1,0 +1,43 @@
+AVVISI DI TERZE PARTI — Trascrittore riunioni
+==============================================
+
+Il codice di Trascrittore riunioni è distribuito con licenza MIT No Attribution
+(vedi LICENSE.txt). Il programma si appoggia a componenti di terze parti, ciascuno
+con la propria licenza, elencati qui sotto.
+
+
+1. COMPONENTI INCLUSI NEL FILE DI INSTALLAZIONE
+-----------------------------------------------
+
+Python 3.12 (build "python-build-standalone" di Astral)
+  Licenza: Python Software Foundation License (PSF-2.0).
+  Include librerie con licenze proprie (OpenSSL: Apache-2.0; Tcl/Tk: licenza Tcl,
+  tipo BSD; SQLite: pubblico dominio; libffi, Expat: MIT; zlib: zlib; bzip2: tipo
+  BSD; XZ Utils: 0BSD; mpdecimal: BSD-2-Clause). I testi completi sono nella
+  cartella runtime\ dell'installazione.
+  https://www.python.org/  —  https://github.com/astral-sh/python-build-standalone
+
+pyannote speaker-diarization-community-1 (modello di separazione delle voci)
+  © pyannoteAI. Licenza: Creative Commons Attribution 4.0 International (CC BY 4.0),
+  https://creativecommons.org/licenses/by/4.0/
+  Fonte: https://huggingface.co/pyannote/speaker-diarization-community-1
+  Incluso senza modifiche, cartella models\pyannote-community-1 (senza l'immagine
+  dimostrativa). Contiene:
+  - modello di segmentazione pyannote;
+  - modello di embedding WeSpeaker ResNet34 addestrato su VoxCeleb, CC BY 4.0
+    (Wang et al., "Wespeaker: A research and production oriented speaker embedding
+    learning toolkit", ICASSP 2023);
+  - modello PLDA addestrato dal gruppo BUT Speech@FIT (VBx).
+
+
+2. COMPONENTI SCARICATI DURANTE L'INSTALLAZIONE O AL PRIMO USO
+--------------------------------------------------------------
+
+Modelli Whisper large-v3 e large-v3-turbo (OpenAI, conversione CTranslate2 per
+faster-whisper). Licenza: MIT. https://github.com/openai/whisper
+
+PyTorch per CUDA include librerie NVIDIA CUDA/cuDNN distribuite da NVIDIA alle
+condizioni della NVIDIA Software License per i componenti ridistribuibili.
+
+Pacchetti Python, scaricati da PyPI e da download.pytorch.org nelle versioni
+indicate, con la licenza dichiarata nei loro metadati:

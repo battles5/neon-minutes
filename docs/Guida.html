@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guida di Trascrittore riunioni</title>
+<style>
+  :root {
+    --bg: #fbfbfd; --fg: #1d1d27; --muted: #5b5b6b; --line: #e3e3ec; --card: #ffffff;
+    --accent: #4f46e5; --accent-soft: #eef0ff; --warn: #9a5b00; --warn-soft: #fff6e5; --code: #f3f3f8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14141c; --fg: #e9e9f2; --muted: #a3a3b8; --line: #2b2b3a; --card: #1b1b26;
+      --accent: #a5b4fc; --accent-soft: #23234a; --warn: #f5c26b; --warn-soft: #33270f; --code: #22222f;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 "Segoe UI", system-ui, sans-serif; }
+  header { padding: 40px 16px 24px; border-bottom: 1px solid var(--line); }
+  header .wrap { display: flex; gap: 20px; align-items: center; }
+  header img { width: 64px; height: 64px; }
+  h1 { margin: 0; font-size: 30px; }
+  header p { margin: 4px 0 0; color: var(--muted); }
+  .wrap { max-width: 900px; margin: 0 auto; }
+  main { padding: 8px 16px 64px; }
+  nav { margin: 24px 0; padding: 16px 20px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; }
+  nav ol { margin: 0; padding-left: 20px; columns: 2; column-gap: 32px; }
+  nav a { color: var(--accent); text-decoration: none; }
+  h2 { margin-top: 48px; padding-top: 8px; font-size: 23px; border-top: 1px solid var(--line); }
+  h3 { margin-top: 28px; font-size: 18px; }
+  a { color: var(--accent); }
+  code, pre { font-family: Consolas, "Cascadia Mono", monospace; font-size: 14px; background: var(--code); border-radius: 6px; }
+  code { padding: 1px 5px; }
+  pre { padding: 12px 14px; overflow-x: auto; line-height: 1.45; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; background: var(--card); }
+  th, td { text-align: left; vertical-align: top; padding: 8px 10px; border: 1px solid var(--line); }
+  th { background: var(--accent-soft); }
+  .note { padding: 12px 16px; border-radius: 10px; background: var(--accent-soft); margin: 16px 0; }
+  .warn { padding: 12px 16px; border-radius: 10px; background: var(--warn-soft); color: var(--fg); margin: 16px 0; border-left: 4px solid var(--warn); }
+  kbd { font-family: inherit; font-size: 14px; padding: 1px 6px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; background: var(--card); }
+  footer { color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); padding: 20px 16px 40px; }
+  @media (max-width: 640px) { nav ol { columns: 1; } h1 { font-size: 24px; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <img src="../assets/piuma.png" alt="">
+    <div>
+      <h1>Trascrittore riunioni</h1>
+      <p>Trascrizione delle riunioni con i nomi di chi parla, tutta sul tuo PC.</p>
+    </div>
+  </div>
+</header>
+<main class="wrap">
+
+<nav>
+  <ol>
+    <li><a href="#cosa">Cosa fa</a></li>
+    <li><a href="#requisiti">Requisiti</a></li>
+    <li><a href="#installazione">Installazione</a></li>
+    <li><a href="#uso">Come si usa</a></li>
+    <li><a href="#risultati">I risultati</a></li>
+    <li><a href="#nomi">Come vengono trovati i nomi</a></li>
+    <li><a href="#correggere">Correggere un nome</a></li>
+    <li><a href="#glossario">Glossario</a></li>
+    <li><a href="#prestazioni">Tempi</a></li>
+    <li><a href="#dati">Dove sono i dati</a></li>
+    <li><a href="#privacy">Privacy</a></li>
+    <li><a href="#problemi">Risoluzione dei problemi</a></li>
+    <li><a href="#riga-di-comando">Riga di comando</a></li>
+    <li><a href="#disinstallazione">Disinstallazione</a></li>
+    <li><a href="#licenze">Licenze</a></li>
+  </ol>
+</nav>
+
+<h2 id="cosa">1. Cosa fa</h2>
+<p>Prende una registrazione di una riunione (per esempio il file <code>.mp4</code> di Teams, o una
+cattura dello schermo) e produce:</p>
+<ul>
+  <li>la <strong>trascrizione</strong> in italiano, divisa per interventi;</li>
+  <li>la <strong>separazione dei partecipanti</strong>: chi ha detto cosa;</li>
+  <li>i <strong>nomi</strong> dei partecipanti, quando il video di Teams li mostra;</li>
+  <li>i <strong>sottotitoli</strong> da usare con il video.</li>
+</ul>
+<p>Funziona senza account e senza servizi cloud: tutto viene elaborato sul tuo computer.</p>
+
+<h2 id="requisiti">2. Requisiti</h2>
+<table>
+  <tr><th></th><th>Modalità veloce (GPU)</th><th>Modalità CPU</th></tr>
+  <tr><td>Scheda video</td><td>NVIDIA con almeno 4 GB di memoria, architettura Turing o successiva
+    (compute capability 7.5+): GTX 1650 e successive, RTX 20xx/30xx/40xx/50xx, Quadro RTX, RTX A-series, RTX Ada</td>
+    <td>qualsiasi (Intel, AMD, NVIDIA più vecchie)</td></tr>
+  <tr><td>Driver</td><td>NVIDIA 570 o successivo</td><td>—</td></tr>
+  <tr><td>Modello Whisper</td><td>large-v3 (il più preciso)</td><td>large-v3-turbo (quasi altrettanto preciso, più leggero)</td></tr>
+  <tr><td>Un'ora di riunione</td><td>circa 12-15 minuti</td><td>circa 1 ora e mezza su un processore potente, 2-3 ore su un portatile da ufficio</td></tr>
+  <tr><td>Da scaricare durante l'installazione</td><td>circa 6 GB</td><td>circa 2 GB</td></tr>
+  <tr><td>Spazio su disco</td><td>circa 9 GB (fino a 12 GB durante l'installazione)</td><td>circa 3 GB</td></tr>
+</table>
+<p>In entrambi i casi: Windows 10 o 11 a 64 bit, almeno 8 GB di RAM (consigliati 16 GB) e una
+connessione a Internet <em>solo durante l'installazione</em>. Non servono diritti di amministratore.</p>
+<div class="note">Non devi scegliere tu: il programma di installazione controlla il PC, mostra cosa ha
+trovato nella pagina <strong>Verifica dell'hardware</strong> e installa la versione giusta. Anche dopo,
+il programma sceglie da solo GPU o CPU a ogni avvio.</div>
+
+<h2 id="installazione">3. Installazione</h2>
+<ol>
+  <li>Avvia <code>TrascrittoreRiunioni-Setup-1.0.0.exe</code>.</li>
+  <li>Se compare <strong>"PC protetto da Windows"</strong>: il programma non è firmato digitalmente.
+    Scegli <em>Ulteriori informazioni</em> e poi <em>Esegui comunque</em>.</li>
+  <li>Segui le pagine del wizard: licenza, requisiti, cartella (va bene quella proposta), opzioni.
+    Lascia attiva <em>Scarica subito il modello Whisper</em>: così la prima trascrizione parte subito.</li>
+  <li>La pagina <strong>Verifica dell'hardware e spazio necessario</strong> ti dice, prima di iniziare,
+    quale scheda video ha trovato, quale versione installerà, <strong>quanto scaricherà</strong>,
+    <strong>quanto spazio servirà</strong> e quanto tempo ci vorrà con la tua connessione. Gli stessi dati
+    sono riassunti nella pagina <em>Pronto per l'installazione</em>.</li>
+  <li>Durante l'installazione la pagina <strong>Installazione dei componenti</strong> mostra il passo in
+    corso, quanto è già stato scaricato, la velocità e il <strong>tempo rimanente</strong>. Con la GPU ci
+    vogliono circa 15-30 minuti, secondo la connessione (13 minuti misurati con una linea veloce); con la
+    CPU circa 10-15 minuti. Nel frattempo puoi usare il PC.</li>
+  <li>Alla fine puoi avviare subito il programma.</li>
+</ol>
+<p>Vengono creati il collegamento sul desktop (con la piuma) e la cartella <em>Trascrittore riunioni</em>
+nel menu Start, con il programma, questa guida, <em>Ripara componenti</em> e <em>Disinstalla</em>.</p>
+<div class="warn">Se l'installazione dei componenti non riesce (di solito per la connessione o per il
+proxy aziendale), il wizard propone di riprovare. Puoi anche riprovare più tardi da
+<strong>Start → Trascrittore riunioni → Ripara componenti</strong>.</div>
+
+<h2 id="uso">4. Come si usa</h2>
+<ol>
+  <li>Apri <strong>Trascrittore riunioni</strong> dal desktop o dal menu Start.</li>
+  <li><strong>Scegli video…</strong> e seleziona una o più registrazioni (puoi selezionarne
+    diverse insieme con <kbd>Ctrl</kbd> o <kbd>Maiusc</kbd>).</li>
+  <li>Premi <strong>Avvia</strong>.</li>
+</ol>
+<p>Ogni file ha una barra con la fase in corso e il tempo stimato (ETA); con più file c'è anche la
+barra del <strong>Totale</strong>. I file vengono elaborati uno dopo l'altro. Sopra le barre vedi se
+il programma sta usando la GPU o la CPU. Quando ha finito, <strong>Apri cartella risultati</strong>
+mostra i file prodotti.</p>
+<p><strong>Scorciatoia:</strong> trascina uno o più video sull'icona della piuma sul desktop: la
+finestra si apre con i file già scelti.</p>
+<p>Formati accettati: <code>mp4</code>, <code>mkv</code>, <code>mov</code>, <code>avi</code>, <code>webm</code>
+e file solo audio (<code>m4a</code>, <code>mp3</code>, <code>wav</code>, <code>ogg</code>). Con i file solo
+audio le voci vengono separate, ma i nomi non si possono leggere.</p>
+
+<h2 id="risultati">5. I risultati</h2>
+<p>Accanto ai video viene creata una cartella <code>Trascrizioni</code>, con una sottocartella per video:</p>
+<pre>Riunione-20261020.mp4
+Trascrizioni\
+  Riunione-20261020\
+    trascrizione.md     testo da leggere: partecipanti, tempo di parola, interventi
+    trascrizione.srt    sottotitoli (VLC, lettori video, programmi di montaggio)
+    trascrizione.vtt    sottotitoli per il web, con il nome di chi parla
+    trascrizione.json   tutti i dati, parola per parola con i tempi
+    speakers.json       chi è chi: si può correggere a mano
+    _lavoro\            risultati intermedi, servono a rigenerare in fretta</pre>
+<p><code>trascrizione.md</code> è un normale file di testo (Markdown): si apre con il Blocco note, con
+Word o con qualunque editor. Gli interventi hanno questa forma:</p>
+<pre>**[00:04:52] Mario Rossi:** A questo proposito, riesci a mandarmi le specifiche entro venerdì?</pre>
+
+<h2 id="nomi">6. Come vengono trovati i nomi</h2>
+<ol>
+  <li>Il modello <strong>pyannote</strong> ascolta l'audio e raggruppa le voci (SPEAKER_00, SPEAKER_01...).</li>
+  <li>Nelle <strong>registrazioni di Teams</strong> il nome di chi parla viene evidenziato con un riquadro
+    viola. Il programma guarda il video due volte al secondo e legge quei nomi.</li>
+  <li>Per ogni voce controlla quale nome è evidenziato <em>mentre parla quella voce</em> e non mentre
+    parlano le altre. Così un microfono rimasto aperto, o l'etichetta di chi condivide lo schermo, non
+    "ruba" le frasi degli altri.</li>
+  <li>Se il video non basta, usa la <strong>libreria delle voci</strong>: le impronte vocali delle persone
+    già riconosciute in riunioni precedenti. La libreria cresce da sola a ogni riunione.</li>
+  <li>Se non è sicuro, scrive <code>Speaker 2</code>, a volte con un suggerimento: <code>Speaker 2 (forse: Mario Rossi)</code>.</li>
+</ol>
+<div class="note">I nomi si leggono bene dalle <strong>registrazioni fatte da Teams</strong>. Nelle catture dello
+schermo del client Teams dal vivo chi parla è segnalato in modo diverso: lì contano la libreria delle voci
+e la correzione a mano.</div>
+
+<h2 id="correggere">7. Correggere un nome</h2>
+<ol>
+  <li>Apri <code>speakers.json</code> nella cartella della riunione (tasto destro → Apri con → Blocco note).</li>
+  <li>Cambia il valore di <code>"name"</code> della voce sbagliata. Per esempio:
+<pre>"SPEAKER_02": {
+  "name": "Giulia Bianchi",
+  ...</pre></li>
+  <li>Salva e rielabora lo stesso video con il programma. Si rigenerano solo i file
+    <code>trascrizione.*</code>, in un secondo.</li>
+</ol>
+<p>La correzione entra anche nella libreria delle voci, e aiuta a riconoscere quella persona nelle
+riunioni successive. Se due voci diverse sono la stessa persona, basta dare a entrambe lo stesso nome:
+i loro interventi vengono uniti.</p>
+
+<h2 id="glossario">8. Glossario</h2>
+<p>Con il pulsante <strong>Glossario…</strong> apri un file di testo in cui scrivere, uno per riga, i
+termini che Whisper deve scrivere giusti: nomi di progetti, sigle, prodotti, gergo tecnico. Esempio:</p>
+<pre>ProgettoAlfa
+GitLab
+fine-tuning</pre>
+<p>I nomi dei partecipanti letti dal video vengono aggiunti da soli. Il glossario vale per le
+trascrizioni fatte dopo averlo modificato.</p>
+
+<h2 id="prestazioni">9. Tempi</h2>
+<table>
+  <tr><th>Registrazione di prova</th><th>Durata</th><th>GPU (RTX 2000 Ada, 8 GB)</th></tr>
+  <tr><td>Stand-up di 13 minuti</td><td>13:17</td><td>2:25</td></tr>
+  <tr><td>Stand-up di 26 minuti</td><td>25:39</td><td>5:52</td></tr>
+</table>
+<p>In modalità CPU, su un Intel Core i7-14700HX, l'elaborazione richiede circa una volta e mezza la durata
+della registrazione. Su processori meno potenti serve di più.</p>
+<p>Le stime (ETA) migliorano con l'uso: dopo ogni trascrizione il programma registra i tempi reali del tuo PC.
+Al primo utilizzo, se il modello Whisper non è stato scaricato durante l'installazione, si aggiungono
+alcuni minuti di download.</p>
+
+<h2 id="dati">10. Dove sono i dati</h2>
+<table>
+  <tr><th>Cosa</th><th>Dove</th></tr>
+  <tr><td>Programma</td><td><code>%LOCALAPPDATA%\Programs\Trascrittore riunioni</code></td></tr>
+  <tr><td>Libreria delle voci, glossario, tempi, registro errori</td><td><code>%LOCALAPPDATA%\Trascrittore riunioni</code></td></tr>
+  <tr><td>Modelli Whisper scaricati</td><td><code>%LOCALAPPDATA%\Trascrittore riunioni\modelli</code></td></tr>
+  <tr><td>Trascrizioni</td><td>cartella <code>Trascrizioni</code> accanto a ogni video</td></tr>
+</table>
+<p>Per aprire una di queste cartelle incolla il percorso nella barra degli indirizzi di Esplora file.</p>
+
+<h2 id="privacy">11. Privacy</h2>
+<p>Audio, video, trascrizioni e impronte vocali restano sul tuo PC. Il programma si collega a Internet solo
+per scaricare i componenti (durante l'installazione, o al primo uso se hai saltato il download del
+modello). La libreria delle voci contiene impronte vocali, cioè dati personali: non condividerla
+senza il consenso delle persone interessate.</p>
+
+<h2 id="problemi">12. Risoluzione dei problemi</h2>
+<h3>L'installazione dei componenti non riesce</h3>
+<p>Controlla la connessione e riprova da <strong>Start → Trascrittore riunioni → Ripara componenti</strong>.
+Il dettaglio dell'errore è in <code>install.log</code>, nella cartella del programma. Dietro un proxy
+aziendale con autenticazione, chiedi all'IT di consentire <code>pypi.org</code>,
+<code>files.pythonhosted.org</code>, <code>download.pytorch.org</code> e <code>huggingface.co</code>.</p>
+<h3>Ho una GPU NVIDIA ma il programma usa la CPU</h3>
+<p>La scheda deve essere di architettura Turing o successiva, con almeno 4 GB di memoria e con il driver
+570 o successivo. Aggiorna il driver da <a href="https://www.nvidia.com/drivers">nvidia.com/drivers</a>,
+poi esegui <strong>Ripara componenti</strong>: installa la versione per GPU se ora la scheda è adatta.</p>
+<h3>Non compaiono i nomi, solo "Speaker 1", "Speaker 2"</h3>
+<p>Il video non è una registrazione di Teams, oppure nessuno è stato evidenziato mentre parlava. Correggi
+i nomi in <code>speakers.json</code> (sezione 7): dalla volta successiva la libreria delle voci li
+riconoscerà.</p>
+<h3>Una persona è stata divisa in due voci, o due persone sono state unite</h3>
+<p>Nel primo caso dai lo stesso nome a entrambe le voci in <code>speakers.json</code>. Nel secondo, con
+la <a href="#riga-di-comando">riga di comando</a> puoi indicare il numero di partecipanti con
+<code>--num-speakers</code>.</p>
+<h3>Alcune parole tecniche sono scritte male</h3>
+<p>Aggiungile al <a href="#glossario">glossario</a> e rielabora il video con la riga di comando e
+<code>--redo asr</code>.</p>
+<h3>Il programma non si apre</h3>
+<p>Guarda <code>gui.log</code> in <code>%LOCALAPPDATA%\Trascrittore riunioni</code> ed esegui
+<strong>Ripara componenti</strong>.</p>
+
+<h2 id="riga-di-comando">13. Riga di comando (per utenti esperti)</h2>
+<p>Da un terminale PowerShell, nella cartella del programma:</p>
+<pre>cd "$env:LOCALAPPDATA\Programs\Trascrittore riunioni"
+.\runtime\python.exe -m meeting_transcriber "C:\percorso\riunione.mp4"
+.\runtime\python.exe -m meeting_transcriber --help</pre>
+<table>
+  <tr><th>Opzione</th><th>Effetto</th></tr>
+  <tr><td><code>--num-speakers N</code></td><td>numero esatto di partecipanti (anche <code>--min-speakers</code>, <code>--max-speakers</code>)</td></tr>
+  <tr><td><code>--redo asr</code></td><td>rifà la trascrizione (per esempio dopo aver cambiato il glossario); anche <code>video</code>, <code>diarization</code>, <code>names</code>, <code>all</code></td></tr>
+  <tr><td><code>--model large-v3-turbo</code></td><td>modello Whisper diverso da quello scelto in automatico</td></tr>
+  <tr><td><code>--cpu</code></td><td>non usare la GPU</td></tr>
+  <tr><td><code>--out CARTELLA</code></td><td>salva i risultati altrove</td></tr>
+  <tr><td><code>--language en</code></td><td>riunioni in un'altra lingua</td></tr>
+</table>
+
+<h2 id="disinstallazione">14. Disinstallazione</h2>
+<p>Da <strong>Impostazioni → App → App installate → Trascrittore riunioni → Disinstalla</strong>, oppure
+da <strong>Start → Trascrittore riunioni → Disinstalla</strong>. Ti viene chiesto se eliminare anche
+modelli scaricati e libreria delle voci; le trascrizioni accanto ai video restano dove sono.</p>
+
+<h2 id="licenze">15. Licenze</h2>
+<p>Trascrittore riunioni è software libero con licenza <strong>MIT No Attribution</strong> (MIT-0): puoi
+usarlo, copiarlo, modificarlo e ridistribuirlo per qualunque scopo, anche commerciale, senza obblighi.
+Testo completo in <code>LICENSE.txt</code>, nella cartella del programma.</p>
+<p>Si appoggia a componenti open source di terze parti, ciascuno con la propria licenza: Python (PSF),
+PyTorch (BSD), faster-whisper e CTranslate2 (MIT), i modelli Whisper di OpenAI (MIT), pyannote.audio
+(MIT), il modello pyannote speaker-diarization-community-1 (CC BY 4.0, © pyannoteAI, incluso senza
+modifiche), RapidOCR e OpenCV (Apache 2.0), PyAV con FFmpeg e molti altri. L'elenco completo, con le
+attribuzioni, è in <code>THIRD-PARTY-NOTICES.txt</code>.</p>
+</main>
+<footer>
+  <div class="wrap">Trascrittore riunioni 1.0.0 · licenza MIT-0</div>
+</footer>
+</body>
+</html>

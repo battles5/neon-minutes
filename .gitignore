@@ -1,0 +1,19 @@
+# Ambiente e build
+.venv/
+__pycache__/
+build/
+dist/
+
+# Dati personali e locali: token, impronte vocali, glossario, tempi, log
+.env
+voices.json
+glossary.txt
+timings.json
+gui.log
+install.json
+install.log
+
+# Risultati e collegamenti con percorsi di questo PC
+out/
+Trascrizioni/
+*.lnk

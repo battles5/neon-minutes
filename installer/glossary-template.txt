@@ -1,0 +1,11 @@
+# Glossario di Trascrittore riunioni
+#
+# Scrivi qui, uno per riga, i termini che Whisper deve riconoscere e scrivere giusti:
+# nomi di progetti, sigle, prodotti, gergo tecnico. Le righe che iniziano con # sono
+# ignorate. I nomi dei partecipanti letti dal video vengono aggiunti da soli.
+#
+# Esempi (togli il # davanti per usarli):
+# ProgettoAlfa
+# GitLab
+# SharePoint
+# fine-tuning

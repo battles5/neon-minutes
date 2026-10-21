@@ -1,0 +1,10 @@
+# Install torch first from the CUDA index, otherwise pip on Windows picks the CPU-only build:
+#   .venv\Scripts\python -m pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu128
+#   .venv\Scripts\python -m pip install -r requirements.txt
+faster-whisper>=1.2
+pyannote.audio>=4.0
+rapidocr_onnxruntime>=1.4
+opencv-python-headless
+av
+numpy
+python-dotenv

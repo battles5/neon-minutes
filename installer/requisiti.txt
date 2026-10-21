@@ -1,0 +1,36 @@
+PRIMA DI INSTALLARE
+
+Trascrittore riunioni trascrive le registrazioni delle riunioni e separa chi parla, con il
+nome quando il video di Teams lo mostra. Tutto avviene sul tuo PC: audio e contenuti non
+vengono inviati a nessun servizio esterno.
+
+
+REQUISITI
+
+Sistema
+- Windows 10 o 11 a 64 bit. Non servono diritti di amministratore.
+- Connessione a Internet durante l'installazione, per scaricare PyTorch, le librerie e il
+  modello Whisper. Dopo l'installazione il programma funziona anche offline.
+- Memoria RAM: almeno 8 GB, consigliati 16 GB.
+
+Scheda video: facoltativa, ma cambia molto la velocità
+- Modalità veloce: GPU NVIDIA con almeno 4 GB di memoria video, architettura Turing o
+  successiva (compute capability 7.5 o superiore), driver NVIDIA 570 o successivo.
+  Per esempio: GeForce GTX 1650 e successive, RTX 20xx, 30xx, 40xx, 50xx, Quadro RTX,
+  RTX A-series, RTX Ada.
+  Una riunione di un'ora richiede circa 12-15 minuti.
+  Da scaricare circa 6 GB; spazio su disco circa 9 GB (fino a 12 GB durante l'installazione).
+- Modalità CPU: tutti gli altri PC (grafica Intel o AMD, schede NVIDIA più vecchie o con
+  meno memoria). Il risultato è lo stesso, ma serve più tempo: circa 1 ora e mezza per
+  un'ora di riunione su un processore recente e potente, 2-3 ore su un portatile da ufficio.
+  Da scaricare circa 2 GB; spazio su disco circa 3 GB.
+
+Più avanti, nella pagina "Verifica dell'hardware e spazio necessario", il programma di
+installazione ti dice cosa ha trovato sul tuo PC, quanto scaricherà, quanto spazio servirà
+e quanto tempo ci vorrà, prima di iniziare.
+
+
+AVVISO DI WINDOWS
+
+Il programma non è firmato digitalmente: se Windows mostra "PC protetto da Windows",
+scegli "Ulteriori informazioni" e poi "Esegui comunque".
