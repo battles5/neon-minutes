@@ -11,6 +11,7 @@ import threading
 import time
 import tkinter as tk
 import traceback
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 
@@ -75,9 +76,9 @@ STAGE_LABELS = {
 
 
 class Job:
-    def __init__(self, path: Path, estimate: float):
+    def __init__(self, path: Path):
         self.path = path
-        self.estimate = estimate  # expected seconds before any progress is known
+        self.estimate: float | None = None  # expected seconds, computed in the background
         self.fraction = 0.0
         self.stage = ""
         self.started: float | None = None
@@ -89,6 +90,8 @@ class Job:
         """Seconds left. Before 5% progress trust the estimate, then the observed rate."""
         if self.finished or self.error:
             return 0.0
+        if self.estimate is None:
+            return None
         if self.started is None:
             return self.estimate * speed
         elapsed = time.time() - self.started
@@ -107,6 +110,11 @@ class App:
         self.running = False
         self.started: float | None = None
         self.finished: float | None = None
+        # Importing torch/faster-whisper the first time after boot can take a minute: it never
+        # runs on the Tk thread, and one worker keeps the hardware check and the estimates in
+        # sequence (two threads loading the CUDA libraries at once can deadlock).
+        self.prep = ThreadPoolExecutor(max_workers=1)
+        self.selection = 0  # bumped at every pick, so stale estimates are ignored
 
         root.title("Trascrittore riunioni")
         root.geometry("820x560")
@@ -126,7 +134,7 @@ class App:
 
         self.hardware = ttk.Label(root, padding=(12, 0), foreground="#555", text="Verifica dell'hardware…")
         self.hardware.pack(fill="x")
-        threading.Thread(target=lambda: self.q.put(("hardware", hardware.detect())), daemon=True).start()
+        self.prep.submit(lambda: self.q.put(("hardware", hardware.detect())))
         self.info = ttk.Label(root, padding=(12, 0), foreground="#555")
         self.info.pack(fill="x")
         if not diarization_available(self.token):
@@ -172,22 +180,26 @@ class App:
             self.add_files(files)
 
     def add_files(self, files):
-        opts = Options()
-        self.jobs = []
+        self.jobs = [Job(Path(f)) for f in files]
         self.started = self.finished = None
-        for f in files:
-            path = Path(f)
-            try:
-                estimate = expected_seconds(plan(path, opts, None, self.token))
-            except Exception as exc:  # unreadable file: show it, skip it
-                self.write_log(f"Impossibile leggere {path.name}: {exc}")
-                continue
-            self.jobs.append(Job(path, estimate))
+        self.selection += 1
         self.build_rows()
         folders = sorted({str(default_out_root(j.path)) for j in self.jobs})
         self.info.configure(text="Risultati in: " + "; ".join(folders))
-        self.start_btn.configure(state="normal" if self.jobs else "disabled")
+        self.start_btn.configure(state="disabled")
         self.open_btn.configure(state="disabled")
+        self.prep.submit(self.estimate, self.selection, [j.path for j in self.jobs])
+
+    def estimate(self, selection: int, paths: list[Path]):
+        """Background: expected seconds per file, or the reason it cannot be read."""
+        opts = Options()
+        results = []
+        for path in paths:
+            try:
+                results.append(expected_seconds(plan(path, opts, None, self.token)))
+            except Exception as exc:
+                results.append(exc)
+        self.q.put(("estimates", selection, results))
 
     def build_rows(self):
         for child in self.list_frame.winfo_children():
@@ -222,6 +234,8 @@ class App:
         opts = Options()
         library = VoiceLibrary(DATA_DIR / "voices.json")
         for i, job in enumerate(self.jobs):
+            if job.error:
+                continue
             self.q.put(("start", i))
             try:
                 output = process(job.path, opts, self.token, library, report=_QueueReporter(self.q, i))
@@ -242,6 +256,15 @@ class App:
                 profile = rest[0]
                 self.hardware.configure(text=profile.description,
                                         foreground="#555" if profile.gpu else "#b45309")
+            elif kind == "estimates" and rest[0] == self.selection:
+                for job, result in zip(self.jobs, rest[1]):
+                    if isinstance(result, Exception):
+                        job.error = "file non leggibile"
+                        self.write_log(f"Impossibile leggere {job.path.name}: {result}")
+                    else:
+                        job.estimate = result
+                if any(not j.error for j in self.jobs):
+                    self.start_btn.configure(state="normal")
             elif kind == "start":
                 job = self.jobs[rest[0]]
                 job.started = time.time()
@@ -273,7 +296,7 @@ class App:
         """Observed time / estimated time, so queued recordings get realistic ETAs."""
         ratios = [(j.finished - j.started) / j.estimate for j in self.jobs if j.finished and j.estimate]
         current = next((j for j in self.jobs if j.started and not j.finished and not j.error), None)
-        if current and current.fraction >= 0.2:
+        if current and current.estimate and current.fraction >= 0.2:
             ratios.append((time.time() - current.started) / (current.fraction * current.estimate))
         return sum(ratios) / len(ratios) if ratios else 1.0
 
@@ -288,14 +311,18 @@ class App:
             elif job.started:
                 stage = STAGE_LABELS.get(job.stage, "avvio")
                 text = f"{stage} {job.fraction:.0%} · ETA {_clock(job.eta(speed))}"
+            elif job.estimate is None:
+                text = "calcolo della stima…"
             else:
                 text = f"in attesa · ETA {_clock(job.eta(speed))}"
             row["status"].configure(text=text)
         if len(self.jobs) > 1:
-            total = sum(j.estimate for j in self.jobs) or 1.0
-            done = sum(j.estimate * (1.0 if (j.finished or j.error) else j.fraction) for j in self.jobs)
+            total = sum(j.estimate or 0.0 for j in self.jobs) or 1.0
+            done = sum((j.estimate or 0.0) * (1.0 if (j.finished or j.error) else j.fraction) for j in self.jobs)
             self.total_bar["value"] = done / total * 1000
-            if self.running:
+            if any(j.estimate is None and not j.error for j in self.jobs):
+                self.total_label.configure(text="calcolo della stima…")
+            elif self.running:
                 remaining = sum(j.eta(speed) or 0.0 for j in self.jobs)
                 self.total_label.configure(text=f"{done / total:.0%} · ETA {_clock(remaining)}")
             elif self.finished:
@@ -348,9 +375,9 @@ def main(files: list[str] | None = None):
     if "vista" in style.theme_names():
         style.theme_use("vista")
     app = App(root)
-    files = files if files is not None else sys.argv[1:]
+    files = [f for f in (files if files is not None else sys.argv[1:]) if Path(f).is_file()]
     if files:
-        app.add_files([f for f in files if Path(f).is_file()])
+        root.after(100, lambda: app.add_files(files))  # once the window is on screen
     root.mainloop()
 
 

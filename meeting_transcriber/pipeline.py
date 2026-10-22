@@ -271,6 +271,7 @@ def process(
             def scan():
                 t = time.time()
                 samples = scan_speaker_labels(video, fps=opts.video_fps, progress=progress.stage("video"))
+                progress.update("video", 1.0)  # the last sampled frame is a little before the end
                 _write_json(paths["labels"], {"fps": opts.video_fps, "samples": samples})
                 _record_rate(opts.device, "video", time.time() - t, duration)
                 log(f"  video letto in {time.time() - t:.0f}s")
@@ -288,6 +289,7 @@ def process(
                 wave, token, device=opts.device, progress=progress.stage("diarization"),
                 num_speakers=opts.num_speakers, min_speakers=opts.min_speakers, max_speakers=opts.max_speakers,
             )
+            progress.update("diarization", 1.0)
             _write_json(paths["diarization"], diarization)
             _record_rate(opts.device, "diarization", time.time() - t, duration)
             log(f"  voci separate in {time.time() - t:.0f}s: {len(diarization['embeddings'])} voci")

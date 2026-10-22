@@ -5,8 +5,8 @@ The CUDA 12.8 build of PyTorch runs on NVIDIA GPUs with compute capability 7.5 o
 about 3 GB in int8_float16. Anything else runs on the CPU with the lighter large-v3-turbo.
 """
 
+import threading
 from dataclasses import dataclass
-from functools import lru_cache
 
 MIN_COMPUTE_CAPABILITY = (7, 5)
 FLOAT16_MIN_VRAM_GB = 6.0
@@ -33,8 +33,20 @@ def cpu_profile(reason: str) -> Profile:
     return Profile("cpu", "int8", CPU_MODEL, f"{reason}: modalità CPU (più lenta)")
 
 
-@lru_cache(maxsize=1)
+_lock = threading.Lock()
+_profile: Profile | None = None
+
+
 def detect() -> Profile:
+    """The profile of this PC, computed once; callers on other threads wait for the first one."""
+    global _profile
+    with _lock:
+        if _profile is None:
+            _profile = _detect()
+        return _profile
+
+
+def _detect() -> Profile:
     try:
         import torch
     except ImportError:

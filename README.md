@@ -10,6 +10,8 @@
   ·
   <a href="docs/Guida.html">Guida completa</a>
   ·
+  <a href="CHANGELOG.md">Novità</a>
+  ·
   <a href="#in-english">English</a>
 </p>
 
