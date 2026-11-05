@@ -8,3 +8,5 @@ opencv-python-headless
 av
 numpy
 python-dotenv
+sv-ttk
+darkdetect

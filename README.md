@@ -55,9 +55,11 @@ Nessun account, nessun servizio cloud: audio, video e trascrizioni non lasciano 
   partecipanti letti dal video si aggiungono da soli.
 - **Formati di uscita**: Markdown da leggere, sottotitoli SRT e WebVTT, JSON parola per parola
   con i tempi.
-- **Interfaccia grafica semplice**: scegli uno o più video, oppure trascinali sull'icona. Per
-  ogni file c'è una barra di avanzamento con il tempo stimato (ETA), più una barra totale. Le
-  stime migliorano con l'uso. C'è anche la riga di comando per gli utenti esperti.
+- **Interfaccia grafica semplice, con coda**: aggiungi video quando vuoi, anche durante
+  un'elaborazione, oppure trascinali sull'icona. Avvii tutta la coda o un singolo video. Ogni
+  video ha la sua barra con il tempo stimato (ETA), e c'è l'ETA totale di tutto quello che resta
+  da fare, aggiornata a ogni aggiunta. Le stime migliorano con l'uso. Tema chiaro o scuro come
+  il sistema. C'è anche la riga di comando per gli utenti esperti.
 - **Si adatta all'hardware**: usa la GPU NVIDIA quando c'è e il modello più leggero
   large-v3-turbo sulla CPU.
 - **Installer Windows** con wizard in italiano, senza diritti di amministratore, con
@@ -100,9 +102,10 @@ collegamento sul desktop (la piuma) e la voce nel menu Start, che comprende la g
 ## Uso
 
 1. Apri **Trascrittore riunioni**.
-2. **Scegli video…** e seleziona una o più registrazioni (mp4, mkv, mov, avi, webm, oppure solo
-   audio: m4a, mp3, wav, ogg).
-3. **Avvia**.
+2. **Aggiungi video…** e seleziona una o più registrazioni (mp4, mkv, mov, avi, webm, oppure
+   solo audio: m4a, mp3, wav, ogg). Puoi aggiungerne altre in qualunque momento.
+3. **Avvia tutti**, oppure **▶** sulla riga di un singolo video. **✕** toglie un video dalla
+   lista. I video vengono elaborati uno alla volta, nell'ordine della coda.
 
 I risultati vanno in una cartella `Trascrizioni` accanto ai video:
 

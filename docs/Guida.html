@@ -130,14 +130,26 @@ proxy aziendale), il wizard propone di riprovare. Puoi anche riprovare più tard
 <h2 id="uso">4. Come si usa</h2>
 <ol>
   <li>Apri <strong>Trascrittore riunioni</strong> dal desktop o dal menu Start.</li>
-  <li><strong>Scegli video…</strong> e seleziona una o più registrazioni (puoi selezionarne
+  <li><strong>Aggiungi video…</strong> e seleziona una o più registrazioni (puoi selezionarne
     diverse insieme con <kbd>Ctrl</kbd> o <kbd>Maiusc</kbd>).</li>
-  <li>Premi <strong>Avvia</strong>.</li>
+  <li>Premi <strong>Avvia tutti</strong>, oppure <strong>▶</strong> sulla riga di un singolo video.</li>
 </ol>
-<p>Ogni file ha una barra con la fase in corso e il tempo stimato (ETA); con più file c'è anche la
-barra del <strong>Totale</strong>. I file vengono elaborati uno dopo l'altro. Sopra le barre vedi se
-il programma sta usando la GPU o la CPU. Quando ha finito, <strong>Apri cartella risultati</strong>
-mostra i file prodotti.</p>
+<p><strong>La coda.</strong> Puoi aggiungere altri video in qualunque momento, anche mentre uno è in
+elaborazione: la lista non ha limiti e scorre. I video vengono elaborati uno alla volta (la scheda video
+è una sola):</p>
+<ul>
+  <li><strong>Avvia tutti</strong> mette in coda tutti i video in attesa. Finché la coda è attiva, anche i
+    video aggiunti dopo entrano in coda da soli.</li>
+  <li><strong>▶</strong> su una riga avvia subito quel video o, se un altro è in corso, lo mette per primo
+    in coda.</li>
+  <li><strong>✕</strong> toglie un video dalla lista (tranne quello in elaborazione). Lo stesso video non
+    può essere in lista due volte.</li>
+</ul>
+<p>Ogni video ha una barra con la fase in corso e il tempo stimato (ETA), o la sua posizione in coda; con
+più video c'è anche la riga del <strong>Totale</strong>, con l'ETA di tutto quello che resta da fare,
+aggiornata a ogni aggiunta o rimozione. Sopra la lista vedi se il programma sta usando la GPU o la CPU.
+<strong>Apri cartella risultati</strong> mostra i file dell'ultimo video completato.</p>
+<p>La finestra segue il tema chiaro o scuro di Windows, letto all'avvio.</p>
 <p><strong>Scorciatoia:</strong> trascina uno o più video sull'icona della piuma sul desktop: la
 finestra si apre con i file già scelti.</p>
 <p>Formati accettati: <code>mp4</code>, <code>mkv</code>, <code>mov</code>, <code>avi</code>, <code>webm</code>
@@ -282,7 +294,7 @@ modifiche), RapidOCR e OpenCV (Apache 2.0), PyAV con FFmpeg e molti altri. L'ele
 attribuzioni, è in <code>THIRD-PARTY-NOTICES.txt</code>.</p>
 </main>
 <footer>
-  <div class="wrap">Trascrittore riunioni 1.0.1 · licenza MIT-0</div>
+  <div class="wrap">Trascrittore riunioni 1.1.0 · licenza MIT-0</div>
 </footer>
 </body>
 </html>

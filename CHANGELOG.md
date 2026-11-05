@@ -1,5 +1,18 @@
 # Modifiche
 
+## 1.1.0 — 05/11/2026
+
+- **Coda di registrazioni.** "Aggiungi video…" resta attivo anche durante un'elaborazione e i
+  video si accodano senza limiti, in una lista che scorre. "Avvia tutti" mette in coda tutto ciò
+  che è in attesa: finché la coda è attiva, anche i video aggiunti dopo entrano da soli. Su ogni
+  riga, ▶ avvia quel video (o lo mette per primo in coda) e ✕ lo toglie dalla lista. Lo stesso
+  video non può essere in lista due volte.
+- **ETA totale** di tutto quello che resta da fare, ricalcolata a ogni aggiunta o rimozione,
+  oltre all'ETA e alla posizione in coda di ogni video.
+- **Tema chiaro o scuro** come quello di Windows (letto all'avvio), con la barra del titolo
+  scura nel tema scuro. Nuove dipendenze: sv-ttk (MIT) e darkdetect (BSD-3-Clause).
+- "Apri cartella risultati" apre la cartella dell'ultimo video completato.
+
 ## 1.0.1 — 22/10/2026
 
 - **Corretto il blocco della finestra dopo la scelta di un video.** La stima dei tempi e il
