@@ -146,6 +146,17 @@ def copy_program(payload: Path):
     APP_DIR.mkdir(parents=True, exist_ok=True)
     for name in ("meeting_transcriber", "installer", "docs", "assets", "models"):
         shutil.rmtree(APP_DIR / name, ignore_errors=True)
+    # On an upgrade the bundled Python is already there: copytree cannot overwrite its symlinks
+    # (bin/python3 -> python3.12, ...), so drop the old ones first.
+    for root, dirs, files in os.walk(payload):
+        for name in dirs + files:
+            src = Path(root) / name
+            if src.is_symlink():
+                dst = APP_DIR / src.relative_to(payload)
+                if dst.is_symlink() or dst.is_file():
+                    dst.unlink()
+                elif dst.is_dir():
+                    shutil.rmtree(dst)
     shutil.copytree(payload, APP_DIR, dirs_exist_ok=True, symlinks=True)
     site = next((APP_DIR / "runtime" / "lib").glob("python3.*")) / "site-packages"
     # A .pth file makes the program importable from any working directory.
