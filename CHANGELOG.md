@@ -11,6 +11,8 @@
   On Linux the `.run` file moves `~/.local/lib/neon-verbale`, replaces the `neon-verbale` command
   with `neon-minutes` and the data folder follows.
 - The Linux build on GitHub Actions now also tests the upgrade from Neon Verbale 1.4.0.
+- Linux: installing a new version over an existing one stopped while copying the bundled Python
+  (its symbolic links already existed). Found by the new upgrade test, now fixed.
 
 ## 1.4.0 — 2026-11-05
 
