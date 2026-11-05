@@ -59,22 +59,36 @@ jobs:
           "$HOME/.local/bin/neon-verbale" --trascrivi "$RUNNER_TEMP/prova/riunione.wav" --no-voices
           cat "$RUNNER_TEMP/prova/Trascrizioni/riunione/trascrizione.md"
           grep -qiE "riunione|progetto|scadenze" "$RUNNER_TEMP/prova/Trascrizioni/riunione/trascrizione.md"
+          # Another meeting language, detected by Whisper.
+          espeak-ng -v en -s 140 -w "$RUNNER_TEMP/prova/meeting.wav" \
+            "Good morning everyone. Today we talk about the project and the next deadlines. Thank you, the meeting is over."
+          "$HOME/.local/bin/neon-verbale" --trascrivi "$RUNNER_TEMP/prova/meeting.wav" --no-voices --language auto
+          cat "$RUNNER_TEMP/prova/Trascrizioni/meeting/trascrizione.md"
+          grep -qiE "meeting|project|deadlines" "$RUNNER_TEMP/prova/Trascrizioni/meeting/trascrizione.md"
+          grep -q '"language": "en"' "$RUNNER_TEMP/prova/Trascrizioni/meeting/_lavoro/asr.json"
 
       - name: "Prova: finestra del programma e wizard (schermo virtuale)"
         run: |
           export HOME="$RUNNER_TEMP/home"
           APP="$HOME/.local/lib/neon-verbale"
           export NEON_SMOKE_SHOTS="$RUNNER_TEMP/screenshot" && mkdir -p "$NEON_SMOKE_SHOTS"
+          # The window in every interface language (Linux's X core fonts only cover Latin-1).
           xvfb-run -a -s "-screen 0 1100x780x24" "$APP/runtime/bin/python3" -I -c "
           import os, subprocess, tkinter as tk
-          from meeting_transcriber import gui, theme
+          from meeting_transcriber import gui, i18n, theme
           root = tk.Tk(className='neon-verbale')
           app = gui.App(root, theme.apply(root))
-          app.add_files([os.environ['RUNNER_TEMP'] + '/prova/riunione.wav'])
+          app.add_files([os.environ['RUNNER_TEMP'] + '/prova/riunione.wav', os.environ['RUNNER_TEMP'] + '/prova/meeting.wav'])
           root.geometry('+0+0')
-          shot = lambda: subprocess.run(['import', '-window', 'root', os.environ['NEON_SMOKE_SHOTS'] + '/programma.png'])
-          root.after(2500, shot)
-          root.after(3500, root.destroy)
+          codes = list(i18n.UI_LANGUAGES)
+          assert 'zh' not in codes
+          def shot(i):
+              if i == len(codes):
+                  return root.destroy()
+              app.ui_box.current(i)
+              app.on_ui_language()
+              root.after(800, lambda: (subprocess.run(['import', '-window', 'root', os.environ['NEON_SMOKE_SHOTS'] + f'/programma_{codes[i]}.png']), shot(i + 1)))
+          root.after(2500, lambda: shot(0))
           root.mainloop()
           print('finestra ok')"
           xvfb-run -a -s "-screen 0 1100x780x24" sh dist/NeonVerbale-*-linux-x86_64.run --smoke-ui

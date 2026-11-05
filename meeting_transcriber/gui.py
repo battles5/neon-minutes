@@ -1,10 +1,11 @@
 """Tkinter window with a queue of recordings, transcribed one after the other.
 
 Recordings can be added at any time, also while one is being transcribed. Each row has a
-progress bar with its own ETA and buttons to start it (or move it to the front of the
-queue) and to remove it; "Avvia tutti" queues every waiting recording. The total ETA covers
-everything still to do and is recomputed whenever the list changes. Results land in a
-"Trascrizioni" folder next to each recording.
+progress bar with its own ETA, the meeting language (changeable until it starts) and buttons to
+start it (or move it to the front of the queue) and to remove it; "Start all" queues every
+waiting recording. The total ETA covers everything still to do and is recomputed whenever the
+list changes. Results land in a "Trascrizioni" folder next to each recording. The interface
+language can be switched at any time (texts in i18n.py).
 """
 
 import itertools
@@ -20,22 +21,20 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from tkinter import filedialog, font, messagebox, ttk
 
-from . import hardware, theme
+from . import hardware, i18n, theme
 from .diarize import available as diarization_available
 from .paths import DATA_DIR, GUIDE, ICON, ICON_PNG, glossary_path, setup_environment
 from .pipeline import Options, Reporter, default_out_root, expected_seconds, plan, process
 from .voices import VoiceLibrary
 
 _EXTENSIONS = ("mp4", "mkv", "mov", "avi", "webm", "m4a", "mp3", "wav", "ogg")
-FILE_TYPES = [
-    # The Linux file dialog matches patterns case-sensitively: list both cases.
-    ("Registrazioni", " ".join(f"*.{e} *.{e.upper()}" for e in _EXTENSIONS)),
-    ("Tutti i file", "*"),
-]
+# The Linux file dialog matches patterns case-sensitively: list both cases.
+_PATTERNS = " ".join(f"*.{e} *.{e.upper()}" for e in _EXTENSIONS)
 TICK_MS = 500
-# On Linux the bundled Tk draws with X core fonts: Latin-1 letters are there, these glyphs are not.
-DOTS = "…" if sys.platform == "win32" else "..."
-PLAY, REMOVE, BUTTON_WIDTH = ("▶", "✕", 3) if sys.platform == "win32" else ("Avvia", "Togli", 6)
+# On Linux the bundled Tk draws with X core fonts: Latin-1 letters are there, ▶ and ✕ are not.
+SYMBOLS = sys.platform == "win32"
+BUTTON_WIDTH = 3 if SYMBOLS else 8
+t = i18n.t
 
 
 def _clock(seconds: float | None) -> str:
@@ -83,22 +82,13 @@ class _QueueReporter(Reporter):
         self.q.put(("progress", self.job_id, fraction, stage))
 
 
-STAGE_LABELS = {
-    "audio": "audio",
-    "video": "lettura nomi",
-    "diarization": "separazione voci",
-    "parallel": "nomi + voci",
-    "asr": "trascrizione",
-    "fatto": "fatto",
-}
-
-
 class Job:
     _ids = itertools.count(1)
 
-    def __init__(self, path: Path):
+    def __init__(self, path: Path, language: str):
         self.id = next(Job._ids)
         self.path = path
+        self.language = language  # meeting language, "auto" to let Whisper detect it
         self.estimate: float | None = None  # expected seconds, computed in the background
         self.queued = False  # in the run queue, waiting for its turn
         self.taken = False  # picked up by the worker thread
@@ -115,7 +105,7 @@ class Job:
 
     @property
     def pending(self) -> bool:
-        """Not started yet: waiting for "Avvia" or already in the queue."""
+        """Not started yet: waiting for "Start" or already in the queue."""
         return self.started is None and not self.error
 
     def eta(self, speed: float) -> float | None:
@@ -143,7 +133,7 @@ class App:
         # The run queue is shared with the worker thread; the GPU takes one recording at a time.
         self.cond = threading.Condition()
         self.run_queue: list[Job] = []
-        self.auto = False  # "Avvia tutti" is on: recordings added meanwhile join the run
+        self.auto = False  # "Start all" is on: recordings added meanwhile join the run
         self.batch_errors = 0
         # Importing torch/faster-whisper the first time after boot can take a minute: it never
         # runs on the Tk thread, and one worker keeps the hardware check and the estimates in
@@ -159,25 +149,45 @@ class App:
 
         top = ttk.Frame(root, padding=(12, 12, 12, 4))
         top.pack(fill="x")
-        ttk.Button(top, text=f"Aggiungi video{DOTS}", command=self.pick).pack(side="left")
-        self.start_btn = ttk.Button(top, text="Avvia tutti", command=self.start_all, state="disabled")
+        self.add_btn = ttk.Button(top, command=self.pick)
+        self.add_btn.pack(side="left")
+        self.start_btn = ttk.Button(top, command=self.start_all, state="disabled")
         self.start_btn.pack(side="left", padx=8)
-        self.open_btn = ttk.Button(top, text="Apri cartella risultati", command=self.open_output, state="disabled")
+        self.open_btn = ttk.Button(top, command=self.open_output, state="disabled")
         self.open_btn.pack(side="left")
-        ttk.Button(top, text="Guida", command=lambda: self.open_file(GUIDE)).pack(side="right")
-        ttk.Button(top, text=f"Glossario{DOTS}", command=lambda: self.open_file(glossary_path())).pack(side="right", padx=8)
+        self.guide_btn = ttk.Button(top, command=lambda: self.open_file(GUIDE))
+        self.guide_btn.pack(side="right")
+        self.glossary_btn = ttk.Button(top, command=lambda: self.open_file(glossary_path()))
+        self.glossary_btn.pack(side="right", padx=8)
 
-        self.hardware = ttk.Label(root, padding=(12, 2), foreground=palette["muted"], text=f"Verifica dell'hardware{DOTS}")
+        # Languages: the meeting's (default for the recordings added next) and the window's.
+        langs = ttk.Frame(root, padding=(12, 4, 12, 2))
+        langs.pack(fill="x")
+        self.meeting_label = ttk.Label(langs)
+        self.meeting_label.pack(side="left")
+        self.meeting_box = ttk.Combobox(langs, state="readonly", width=24)
+        self.meeting_box.pack(side="left", padx=(6, 8))
+        self.meeting_box.bind("<<ComboboxSelected>>", self.on_meeting_language)
+        self.ui_box = ttk.Combobox(langs, state="readonly", width=11, values=list(i18n.UI_LANGUAGES.values()))
+        self.ui_box.pack(side="right")
+        self.ui_box.current(list(i18n.UI_LANGUAGES).index(i18n.ui_language()))
+        self.ui_box.bind("<<ComboboxSelected>>", self.on_ui_language)
+        self.ui_label = ttk.Label(langs)
+        self.ui_label.pack(side="right", padx=(0, 6))
+        self.meeting_hint = ttk.Label(root, padding=(12, 0), foreground=palette["muted"])
+        self.meeting_hint.pack(fill="x")
+        self.meeting_language = i18n.meeting_language()
+
+        self.profile = None
+        self.hardware = ttk.Label(root, padding=(12, 2), foreground=palette["muted"])
         self.hardware.pack(fill="x")
         self.prep.submit(lambda: self.q.put(("hardware", hardware.detect())))
         self.info = ttk.Label(root, padding=(12, 0), foreground=palette["muted"])
         self.info.pack(fill="x")
+        self.warning = None
         if not diarization_available(self.token):
-            ttk.Label(
-                root, padding=(12, 4), foreground=palette["warn"], wraplength=860,
-                text="Modello pyannote non disponibile: gli speaker verranno attribuiti solo dal video "
-                     "(meno preciso). Vedi la guida.",
-            ).pack(fill="x")
+            self.warning = ttk.Label(root, padding=(12, 4), foreground=palette["warn"], wraplength=860)
+            self.warning.pack(fill="x")
 
         # Packed bottom-up so the list in the middle takes the remaining height.
         log_frame = ttk.Frame(root, padding=(12, 4, 12, 12))
@@ -194,16 +204,50 @@ class App:
         total = ttk.Frame(root, padding=(12, 6, 12, 2))
         total.pack(fill="x", side="bottom")
         total.columnconfigure(1, weight=1)
-        self.total_title = ttk.Label(total, text="Totale", font=bold)
+        self.total_title = ttk.Label(total, font=bold)
         self.total_bar = ttk.Progressbar(total, maximum=1000)
         self.total_label = ttk.Label(total, width=38, anchor="w")
         self.total_title.grid(row=0, column=0, sticky="w")
         self.total_bar.grid(row=0, column=1, sticky="ew", padx=10)
         self.total_label.grid(row=0, column=2, sticky="w")
 
+        self.apply_texts()
         self.build_list_area()
         root.after(TICK_MS, self.tick)
         threading.Thread(target=self.worker, daemon=True).start()
+
+    # --- languages ------------------------------------------------------------------
+
+    def apply_texts(self):
+        """(Re)write every text of the window in the interface language."""
+        self.add_btn.configure(text=t("add_videos"))
+        self.start_btn.configure(text=t("start_all"))
+        self.open_btn.configure(text=t("open_results"))
+        self.guide_btn.configure(text=t("guide"))
+        self.glossary_btn.configure(text=t("glossary"))
+        self.meeting_label.configure(text=t("meeting_language") + ":")
+        self.meeting_box.configure(values=[i18n.language_name(c) for c in i18n.MEETING_LANGUAGES])
+        self.meeting_box.current(i18n.MEETING_LANGUAGES.index(self.meeting_language))
+        self.meeting_hint.configure(text=t("meeting_language_hint"))
+        self.ui_label.configure(text=t("ui_language") + ":")
+        self.hardware.configure(text=self.profile.description if self.profile else t("checking_hardware"))
+        if self.warning is not None:
+            self.warning.configure(text=t("no_pyannote_banner"))
+        self.total_title.configure(text=t("total"))
+        self.show_results_folders()
+
+    def on_ui_language(self, _event=None):
+        i18n.set_ui_language(list(i18n.UI_LANGUAGES)[self.ui_box.current()])
+        self.apply_texts()
+        self.build_rows()
+
+    def on_meeting_language(self, _event=None):
+        self.meeting_language = i18n.MEETING_LANGUAGES[self.meeting_box.current()]
+        i18n.set_meeting_language(self.meeting_language)
+
+    def on_row_language(self, job: Job, box: ttk.Combobox):
+        if not job.taken:
+            job.language = i18n.MEETING_LANGUAGES[box.current()]
 
     # --- list of recordings ---------------------------------------------------------
 
@@ -234,7 +278,7 @@ class App:
             child.destroy()
         self.rows = {}
         if not self.jobs:
-            ttk.Label(self.list_frame, text=f"Nessun video in coda: usa \"Aggiungi video{DOTS}\".",
+            ttk.Label(self.list_frame, text=t("empty_list", add=t("add_videos")),
                       foreground=self.palette["muted"]).grid(row=0, column=0, sticky="w")
         for i, job in enumerate(self.jobs):
             name = ttk.Label(self.list_frame, text=job.path.name, width=40, anchor="w")
@@ -243,18 +287,25 @@ class App:
             bar.grid(row=i, column=1, sticky="ew", padx=10)
             status = ttk.Label(self.list_frame, width=34, anchor="w")
             status.grid(row=i, column=2, sticky="w")
-            play = ttk.Button(self.list_frame, text=PLAY, width=BUTTON_WIDTH, command=lambda j=job: self.start_one(j))
-            play.grid(row=i, column=3, padx=(6, 2))
-            remove = ttk.Button(self.list_frame, text=REMOVE, width=BUTTON_WIDTH, command=lambda j=job: self.remove(j))
-            remove.grid(row=i, column=4, padx=(2, 0))
-            self.rows[job.id] = {"bar": bar, "status": status, "play": play, "remove": remove}
+            language = ttk.Combobox(self.list_frame, state="readonly", width=5,
+                                    values=[c.upper() for c in i18n.MEETING_LANGUAGES])
+            language.current(i18n.MEETING_LANGUAGES.index(job.language))
+            language.bind("<<ComboboxSelected>>", lambda e, j=job, b=language: self.on_row_language(j, b))
+            language.grid(row=i, column=3, padx=(6, 0))
+            play = ttk.Button(self.list_frame, text="▶" if SYMBOLS else t("play"), width=BUTTON_WIDTH,
+                              command=lambda j=job: self.start_one(j))
+            play.grid(row=i, column=4, padx=(6, 2))
+            remove = ttk.Button(self.list_frame, text="✕" if SYMBOLS else t("remove"), width=BUTTON_WIDTH,
+                                command=lambda j=job: self.remove(j))
+            remove.grid(row=i, column=5, padx=(2, 0))
+            self.rows[job.id] = {"bar": bar, "status": status, "language": language, "play": play, "remove": remove}
         self.refresh()
 
     def pick(self):
         files = filedialog.askopenfilenames(
-            title="Aggiungi una o più registrazioni",
+            title=t("pick_title"),
             initialdir=str(Path.home() / "Downloads"),
-            filetypes=FILE_TYPES,
+            filetypes=[(t("recordings"), _PATTERNS), (t("all_files"), "*")],
         )
         if files:
             self.add_files(files)
@@ -269,22 +320,25 @@ class App:
                 continue  # already waiting, queued or running
             if old:
                 self.jobs.remove(old)  # done before: add it again as new
-            job = Job(path)
+            job = Job(path, self.meeting_language)
             self.jobs.append(job)
             added.append(job)
-            self.prep.submit(self.estimate, job.id, path)
+            self.prep.submit(self.estimate, job.id, path, job.language)
         if not added:
             return
         if self.auto:
             self.enqueue(added)
         self.build_rows()
-        folders = sorted({str(default_out_root(j.path)) for j in self.jobs})
-        self.info.configure(text="Risultati in: " + "; ".join(folders))
+        self.show_results_folders()
 
-    def estimate(self, job_id: int, path: Path):
+    def show_results_folders(self):
+        folders = sorted({str(default_out_root(j.path)) for j in self.jobs})
+        self.info.configure(text=t("results_in", folders="; ".join(folders)) if folders else "")
+
+    def estimate(self, job_id: int, path: Path, language: str):
         """Background: expected seconds for one file, or the reason it cannot be read."""
         try:
-            result = expected_seconds(plan(path, Options(), None, self.token))
+            result = expected_seconds(plan(path, Options(language=language), None, self.token))
         except Exception as exc:
             result = exc
         self.q.put(("estimate", job_id, result))
@@ -334,7 +388,8 @@ class App:
                 library = VoiceLibrary(DATA_DIR / "voices.json")
             self.q.put(("start", job.id))
             try:
-                output = process(job.path, Options(), self.token, library, report=_QueueReporter(self.q, job.id))
+                output = process(job.path, Options(language=job.language), self.token, library,
+                                 report=_QueueReporter(self.q, job.id))
                 self.q.put(("done", job.id, output))
             except Exception as exc:
                 traceback.print_exc()
@@ -351,7 +406,7 @@ class App:
             except queue.Empty:
                 break
             if kind == "hardware":
-                profile = rest[0]
+                self.profile = profile = rest[0]
                 self.hardware.configure(text=profile.description,
                                         foreground=self.palette["muted"] if profile.gpu else self.palette["warn"])
                 continue
@@ -360,10 +415,10 @@ class App:
                 continue  # removed from the list meanwhile
             if kind == "estimate":
                 if isinstance(rest[1], Exception):
-                    self.write_log(f"Impossibile leggere {job.path.name}: {rest[1]}")
+                    self.write_log(t("cannot_read", name=job.path.name, error=rest[1]))
                     with self.cond:
                         if not job.taken:
-                            job.error, job.queued = "file non leggibile", False
+                            job.error, job.queued = "unreadable", False
                             if job in self.run_queue:
                                 self.run_queue.remove(job)
                 else:
@@ -381,11 +436,11 @@ class App:
             elif kind == "error":
                 job.error = rest[1]
                 self.batch_errors += 1
-                self.write_log(f"ERRORE: {rest[1]}")
+                self.write_log(t("error_line", error=rest[1]))
             if kind in ("done", "error") and not self.busy():
                 self.auto = False
                 if self.batch_errors:
-                    messagebox.showwarning("Neon Verbale", f"{self.batch_errors} file non completati: vedi il log.")
+                    messagebox.showwarning("Neon Verbale", t("not_completed", n=self.batch_errors))
                 self.batch_errors = 0
         self.refresh()
         self.root.after(TICK_MS, self.tick)
@@ -407,21 +462,24 @@ class App:
             if row is None:
                 continue
             row["bar"]["value"] = job.fraction * 1000
+            eta = _clock(job.eta(speed))
             if job.error:
-                text = "errore"
+                text = t("status_error")
             elif job.finished:
-                text = f"fatto in {_clock(job.finished - job.started)}"
+                text = t("status_done", time=_clock(job.finished - job.started))
             elif job.started:
-                stage = STAGE_LABELS.get(job.stage, "avvio")
-                text = f"{stage} {job.fraction:.0%} · ETA {_clock(job.eta(speed))}"
+                key = f"stage_{job.stage}"
+                stage = t(key if key in i18n.T else "stage_start")
+                text = t("status_running", stage=stage, pct=f"{job.fraction:.0%}", eta=eta)
             elif job.estimate is None:
-                text = f"calcolo della stima{DOTS}"
+                text = t("status_estimating")
             elif job.id in positions:
-                text = f"in coda ({positions[job.id]}°) · ETA {_clock(job.eta(speed))}"
+                text = t("status_queued", n=positions[job.id], eta=eta)
             else:
-                text = f"in attesa · ETA {_clock(job.eta(speed))}"
+                text = t("status_waiting", eta=eta)
             row["status"].configure(text=text)
             in_progress = job.taken and not (job.finished or job.error)
+            row["language"].configure(state="disabled" if job.taken or job.finished or job.error else "readonly")
             row["play"].configure(state="normal" if job.pending and not job.taken and positions.get(job.id) != 1
                                   else "disabled")
             row["remove"].configure(state="disabled" if in_progress else "normal")
@@ -442,12 +500,12 @@ class App:
         done = sum(j.estimate * (1.0 if j.finished else j.fraction) for j in counted)
         self.total_bar["value"] = done / total * 1000
         if not todo:
-            self.total_label.configure(text=f"tutto fatto ({len(self.jobs)} video)")
+            self.total_label.configure(text=t("total_done", n=len(self.jobs)))
         elif any(j.estimate is None for j in todo):
-            self.total_label.configure(text=f"{len(todo)} da fare · calcolo della stima{DOTS}")
+            self.total_label.configure(text=t("total_estimating", n=len(todo)))
         else:
             remaining = sum(j.eta(speed) or 0.0 for j in todo)
-            self.total_label.configure(text=f"{len(todo)} da fare · ETA totale {_clock(remaining)}")
+            self.total_label.configure(text=t("total_eta", n=len(todo), eta=_clock(remaining)))
 
     # --- misc -----------------------------------------------------------------------
 
@@ -467,10 +525,10 @@ class App:
         if path.exists():
             open_path(path)
         else:
-            messagebox.showinfo("Neon Verbale", f"File non trovato:\n{path}")
+            messagebox.showinfo("Neon Verbale", t("file_not_found", path=path))
 
     def on_close(self):
-        if self.busy() and not messagebox.askyesno("Neon Verbale", "Trascrizioni in corso o in coda: vuoi interromperle?"):
+        if self.busy() and not messagebox.askyesno("Neon Verbale", t("confirm_close")):
             return
         self.root.destroy()
         os._exit(0)  # the worker thread may be inside a GPU call

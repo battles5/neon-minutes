@@ -38,7 +38,7 @@ def main(argv=None):
     p.add_argument("videos", nargs="+", type=Path, help="registrazioni (mp4, mkv, ...) o file audio")
     p.add_argument("--out", type=Path, help=f"cartella dei risultati (default: {OUTPUT_DIR_NAME}/ accanto al video)")
     p.add_argument("--model", help="modello Whisper (default: large-v3 su GPU, large-v3-turbo su CPU)")
-    p.add_argument("--language", default="it")
+    p.add_argument("--language", default="it", help="lingua della riunione: it, en, es, fr, pt, zh, ... oppure auto (la riconosce Whisper)")
     p.add_argument("--glossary", nargs="*", default=[], help="termini da suggerire a Whisper (oltre a glossary.txt)")
     p.add_argument("--num-speakers", type=int)
     p.add_argument("--min-speakers", type=int)

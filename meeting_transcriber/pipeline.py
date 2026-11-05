@@ -17,7 +17,7 @@ from pathlib import Path
 
 import av
 
-from . import hardware, naming
+from . import hardware, i18n, naming
 from .asr import build_prompt, is_model_cached, transcribe
 from .audio import load_audio
 from .diarize import available as diarization_available
@@ -26,6 +26,8 @@ from .paths import DATA_DIR, glossary_path
 from .render import attribute_words, paragraphs, write_outputs
 from .video_labels import scan_speaker_labels
 from .voices import VoiceLibrary
+
+tr = i18n.t
 
 OUTPUT_DIR_NAME = "Trascrizioni"
 STAGES = ("video", "diarization", "asr", "names")
@@ -82,7 +84,7 @@ class Options:
     """model, device and compute_type left as None are chosen from the hardware profile."""
 
     model: str | None = None
-    language: str = "it"
+    language: str = "it"  # a Whisper language code, or "auto" to detect it
     glossary: list[str] = field(default_factory=list)
     num_speakers: int | None = None
     min_speakers: int | None = None
@@ -95,7 +97,7 @@ class Options:
 
     def resolved(self) -> "Options":
         if self.device == "cpu" and not (self.model and self.compute_type):
-            profile = hardware.cpu_profile("CPU richiesta")
+            profile = hardware.cpu_profile("hw_cpu_requested")
         else:
             profile = hardware.detect()
         return replace(
@@ -177,6 +179,16 @@ def _save_speakers(path: Path, speakers: dict, lag_s):
     _write_json(path, {"_istruzioni": SPEAKERS_HELP, "video_lag_s": lag_s, "speakers": speakers}, indent=2)
 
 
+def _asr_cached(path: Path, language: str) -> bool:
+    """A cached transcript counts only if it was made for the same meeting language."""
+    if not path.exists():
+        return False
+    try:
+        return _read_json(path).get("requested_language", "it") == language  # before 1.4.0: always "it"
+    except (OSError, ValueError):
+        return False
+
+
 def plan(video: Path, opts: Options, out_root: Path | None, token: str | None) -> dict[str, float]:
     """Expected seconds of each stage that still has to run (cached stages are left out)."""
     opts = opts.resolved()
@@ -187,7 +199,7 @@ def plan(video: Path, opts: Options, out_root: Path | None, token: str | None) -
         "video": opts.use_video and has_video(video) and ("video" in redo or not (work / "labels.json").exists()),
         "diarization": diarization_available(token)
         and ("diarization" in redo or not (work / "diarization.json").exists()),
-        "asr": "asr" in redo or not (work / "asr.json").exists(),
+        "asr": "asr" in redo or not _asr_cached(work / "asr.json", opts.language),
     }
     needed["audio"] = needed["diarization"] or needed["asr"]
     rates = _rates(opts.device)
@@ -255,7 +267,7 @@ def process(
     def get_audio():
         nonlocal audio
         if audio is None:
-            log("Decodifica audio...")
+            log(tr("log_decoding"))
             t = time.time()
             audio = load_audio(video)
             _record_rate(opts.device, "audio", time.time() - t, duration)
@@ -266,7 +278,7 @@ def process(
     with ThreadPoolExecutor(max_workers=1) as pool:
         labels_job = None
         if "video" in progress.stages:
-            log(f"Lettura dei nomi dal video ({opts.video_fps:g} fps)...")
+            log(tr("log_reading_names", fps=f"{opts.video_fps:g}"))
 
             def scan():
                 t = time.time()
@@ -274,7 +286,7 @@ def process(
                 progress.update("video", 1.0)  # the last sampled frame is a little before the end
                 _write_json(paths["labels"], {"fps": opts.video_fps, "samples": samples})
                 _record_rate(opts.device, "video", time.time() - t, duration)
-                log(f"  video letto in {time.time() - t:.0f}s")
+                log(tr("log_video_read", s=f"{time.time() - t:.0f}"))
                 return samples
 
             labels_job = pool.submit(scan)
@@ -283,7 +295,7 @@ def process(
         diarization = None
         if "diarization" in progress.stages:
             wave = get_audio()
-            log("Separazione delle voci (pyannote)...")
+            log(tr("log_separating"))
             t = time.time()
             diarization = diarize(
                 wave, token, device=opts.device, progress=progress.stage("diarization"),
@@ -292,7 +304,7 @@ def process(
             progress.update("diarization", 1.0)
             _write_json(paths["diarization"], diarization)
             _record_rate(opts.device, "diarization", time.time() - t, duration)
-            log(f"  voci separate in {time.time() - t:.0f}s: {len(diarization['embeddings'])} voci")
+            log(tr("log_separated", s=f"{time.time() - t:.0f}", n=len(diarization["embeddings"])))
             fresh.add("diarization")
         elif paths["diarization"].exists():
             diarization = _read_json(paths["diarization"])
@@ -307,31 +319,35 @@ def process(
     roster = naming.build_roster(samples)
     names = naming.participants(roster)
     if names:
-        log(f"Nomi letti dal video: {', '.join(names)}")
+        log(tr("log_names", names=", ".join(names)))
     elif opts.use_video:
-        log("Nessuna etichetta Teams evidenziata nel video.")
+        log(tr("log_no_labels"))
 
     if diarization is None:
         if not samples:
-            raise RuntimeError("Modello pyannote non disponibile: serve HF_TOKEN nel file .env (vedi la guida).")
-        log("ATTENZIONE: modello pyannote non disponibile, attribuisco gli speaker solo dal video (meno preciso).")
+            raise RuntimeError(tr("log_no_pyannote_error"))
+        log(tr("log_no_pyannote_warning"))
         diarization = turns_from_video(samples, roster, fps)
 
     if "asr" in progress.stages:
-        prompt = build_prompt(names, load_glossary(opts.glossary))
+        prompt = build_prompt(names, load_glossary(opts.glossary), opts.language)
         wave = get_audio()
         downloading = not is_model_cached(opts.model)
         if downloading:
-            log(f"Scarico il modello Whisper {opts.model} (1,6-3 GB, solo la prima volta)...")
-        log(f"Trascrizione ({opts.model}, {opts.device})...")
+            log(tr("log_downloading_model", model=opts.model))
+        log(tr("log_transcribing", model=opts.model, device=opts.device, language=i18n.language_name(opts.language)))
         t = time.time()
-        asr = transcribe(wave, model_name=opts.model, language=opts.language, prompt=prompt,
+        asr = transcribe(wave, model_name=opts.model, language=None if opts.language == "auto" else opts.language,
+                         prompt=prompt,
                          device=opts.device, compute_type=opts.compute_type, progress=progress.stage("asr"))
+        asr["requested_language"] = opts.language
         _write_json(paths["asr"], asr)
+        if opts.language == "auto":
+            log(tr("log_detected", language=i18n.language_name(asr["language"])))
         default_model = hardware.GPU_MODEL if opts.device == "cuda" else hardware.CPU_MODEL
         if opts.model == default_model and not downloading:
             _record_rate(opts.device, "asr", time.time() - t, duration)
-        log(f"  trascrizione fatta in {time.time() - t:.0f}s")
+        log(tr("log_transcribed", s=f"{time.time() - t:.0f}"))
         fresh.add("asr")
     else:
         asr = _read_json(paths["asr"])
@@ -352,7 +368,7 @@ def process(
         speakers = naming.resolve(turns, video_names, voice)
         lag_s = video_names["lag_s"] if video_names else None
         if lag_s is not None:
-            log(f"Ritardo evidenziazione Teams stimato: {lag_s:+.2f}s")
+            log(tr("log_lag", lag=f"{lag_s:+.2f}"))
     _save_speakers(speakers_path, speakers, lag_s)
     for cluster, info in speakers.items():
         log(f"  {cluster}: {info['name']}  [{info.get('source') or '-'}, {info['speech_s']:.0f}s]")
@@ -361,7 +377,7 @@ def process(
         learned = library.update(meta["id"], speakers, diarization["embeddings"])
         library.save()
         if learned:
-            log(f"Libreria voci aggiornata: {', '.join(sorted(set(learned)))}")
+            log(tr("log_library", names=", ".join(sorted(set(learned)))))
 
     names_by_cluster = {cluster: info["name"] for cluster, info in speakers.items()}
     paras = paragraphs(attribute_words(asr["segments"], turns), names_by_cluster)
@@ -369,5 +385,5 @@ def process(
                 diarization_model=diarization["model"], video_lag_s=lag_s)
     outputs = write_outputs(out_dir, meta, speakers, paras)
     report.progress(1.0, "fatto")
-    log(f"Fatto in {time.time() - started:.0f}s -> {outputs[0]}")
+    log(tr("log_done", s=f"{time.time() - started:.0f}", path=outputs[0]))
     return outputs[0]

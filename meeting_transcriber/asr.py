@@ -9,13 +9,25 @@ import numpy as np
 from .audio import SAMPLE_RATE
 
 
-def build_prompt(names: list[str], glossary: list[str]) -> str | None:
+# "Participants:" and "Terms:" in the meeting's language: a prompt in another language nudges
+# Whisper towards it. With automatic detection the lists go in without a heading.
+PROMPT_WORDS = {
+    "it": ("Partecipanti", "Termini"),
+    "en": ("Participants", "Terms"),
+    "es": ("Participantes", "Términos"),
+    "fr": ("Participants", "Termes"),
+    "pt": ("Participantes", "Termos"),
+    "zh": ("参会者", "术语"),
+}
+
+
+def build_prompt(names: list[str], glossary: list[str], language: str = "it") -> str | None:
     """Whisper spells names and jargon better when they appear in the initial prompt."""
+    headings = PROMPT_WORDS.get(language)
     parts = []
-    if names:
-        parts.append("Partecipanti: " + ", ".join(names) + ".")
-    if glossary:
-        parts.append("Termini: " + ", ".join(glossary) + ".")
+    for heading, items in zip(headings or ("", ""), (names, glossary)):
+        if items:
+            parts.append((f"{heading}: " if heading else "") + ", ".join(items) + ".")
     return " ".join(parts) or None
 
 
@@ -49,7 +61,7 @@ def _drop_repeats(segments: list[dict]) -> list[dict]:
 def transcribe(
     audio: np.ndarray,
     model_name: str = "large-v3",
-    language: str = "it",
+    language: str | None = "it",
     prompt: str | None = None,
     device: str = "cuda",
     compute_type: str = "float16",

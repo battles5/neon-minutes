@@ -122,9 +122,11 @@ def wizard_images():
     img.paste(Image.new("RGB", (w, h), (255, 120, 235)), (0, 0), grid)
     img.save(OUT.with_name("wizard_side.bmp"))
 
-    icon = Image.open(OUT.with_name("piuma.png")).convert("RGBA").resize((110, 110), Image.LANCZOS)
+    # Inno Setup puts the small image flush with the header's right edge: leave a white margin
+    # around the icon so it does not touch the border.
+    icon = Image.open(OUT.with_name("piuma.png")).convert("RGBA").resize((80, 80), Image.LANCZOS)
     small = Image.new("RGBA", (110, 110), (255, 255, 255, 255))
-    small.alpha_composite(icon)
+    small.alpha_composite(icon, (8, 15))
     small.convert("RGB").save(OUT.with_name("wizard_small.bmp"))
     print(OUT.with_name("wizard_side.bmp"), OUT.with_name("wizard_small.bmp"))
 

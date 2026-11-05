@@ -17,3 +17,6 @@ install.log
 out/
 Trascrizioni/
 *.lnk
+
+# Scelte della finestra (lingue)
+settings.json

@@ -277,6 +277,10 @@ def main() -> int:
     p.add_argument("--models", action="store_true")
     p.add_argument("--wizard", action="store_true")
     args = p.parse_args()
+    if args.wizard:
+        # The setups read the progress lines as UTF-8; on Windows a pipe would otherwise get the
+        # ANSI code page and "·", accents and dashes would show up as question marks.
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     app = args.app.resolve()
     installer = app / "installer"
     log = Log(app / "install.log")

@@ -35,8 +35,9 @@ No account, no cloud service: audio, video and transcripts never leave your comp
 **[00:01:25] Mario Rossi:** Lascia stare che in questi giorni non ci ho lavorato, però...
 ```
 
-> The program's interface is in Italian and transcription defaults to Italian; other languages
-> work with `--language`. This documentation is in English.
+> The window speaks English, Italian, Spanish, French, Portuguese and Chinese, and meetings can be
+> transcribed in any of those languages or with automatic language detection. The installers and
+> the output files (`Trascrizioni` folder, `trascrizione.md`) are in Italian.
 
 ## Features
 
@@ -62,6 +63,9 @@ No account, no cloud service: audio, video and transcripts never leave your comp
   own progress bar and estimated time left (ETA), plus a total ETA for everything still to do,
   updated at every addition. Estimates improve with use. Light or dark theme, like the system.
   A command line is there for power users.
+- **Languages**: the window in English, Italian, Spanish, French, Portuguese or Chinese, switched
+  from a menu at any time. A second menu sets the meeting language (the same six, or automatic
+  detection), and each video in the list can have its own.
 - **Adapts to the hardware**: uses an NVIDIA GPU when there is one, and the lighter
   large-v3-turbo model on the CPU.
 - **Installers for Windows and Linux** with a wizard, no administrator rights, clean uninstall.
@@ -137,11 +141,14 @@ NVIDIA GPU), `--no-models` (download Whisper at first use), `--no-desktop` (no d
 ## Usage
 
 1. Open **Neon Verbale**.
-2. Click **Aggiungi video…** (*add videos*) and pick one or more recordings (mp4, mkv, mov, avi,
-   webm, or audio only: m4a, mp3, wav, ogg). You can add more at any time.
-3. Click **Avvia tutti** (*start all*), or **▶** on the row of a single video. **✕** removes a
-   video from the list. Videos are processed one at a time, in queue order. On Linux the two row
-   buttons read **Avvia** and **Togli**.
+2. Pick the **Meeting language** (Italian, English, Spanish, French, Portuguese, Chinese, or
+   *Detect automatically*). The **Interface** menu on the right changes the window's language.
+3. Click **Add videos…** and pick one or more recordings (mp4, mkv, mov, avi, webm, or audio only:
+   m4a, mp3, wav, ogg). You can add more at any time. Each row shows the video's language
+   (IT, EN, ...), which you can change until it starts.
+4. Click **Start all**, or **▶** on the row of a single video. **✕** removes a video from the
+   list. Videos are processed one at a time, in queue order. On Linux the two row buttons read
+   **Start** and **Remove**.
 
 Results go to a `Trascrizioni` folder next to the videos:
 
@@ -198,8 +205,10 @@ video go into Whisper's prompt, so it spells them correctly. Every step saves it
   Debian 10+, Fedora 29+ and similar). No macOS. On Linux the program is tested automatically at
   every release (Ubuntu 24.04, CPU mode, on GitHub Actions); GPU mode on Linux has not been tested
   on a real card yet.
-- **Tuned for Italian** and tested on Teams recordings of 13 and 26 minutes. Other languages work
-  with `--language` but have not been verified.
+- **Tuned for Italian** and tested on Teams recordings of 13 and 26 minutes. The other meeting
+  languages have been tested on short synthetic clips only.
+- **Chinese interface on Windows only**: on Linux the bundled Tk draws with X core fonts, which have
+  no Chinese characters (Chinese meetings can still be transcribed there).
 - **The Windows setup is not digitally signed**, so Windows SmartScreen asks for confirmation.
 - Recording a meeting and keeping the participants' voiceprints requires their consent:
   voiceprints are personal data (GDPR). The program stores them only on your PC.
@@ -279,6 +288,7 @@ for every `v*` tag, or by hand from the *Actions* tab. The workflow:
 ```
 meeting_transcriber/
   gui.py            Tkinter window, queue, progress bars and ETAs
+  i18n.py           texts of the window in six languages, saved language choices
   theme.py          light/dark theme following the system
   cli.py            command line
   pipeline.py       steps, cache, progress, time estimates

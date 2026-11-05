@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.4.0 — 2026-11-05
+
+- **Window in six languages**: English, Italian, Spanish, French, Portuguese and Chinese, chosen
+  from the **Interface** menu and switched at once; the first time the program uses the system's
+  language. Chinese is offered on Windows only (Linux's bundled Tk cannot draw it).
+- **Meeting language**: a menu for the language of the meetings (the same six, or automatic
+  detection by Whisper), remembered between sessions. Each video in the list has its own
+  language, changeable until it starts. The names and terms suggested to Whisper are introduced
+  in the meeting's language. Processing a video again with a different language redoes the
+  transcription. On the command line: `--language auto`.
+- The progress log and the hardware line follow the interface language.
+- Setup: the progress page showed "?" instead of "·" and accented letters; the icon in the
+  wizard's header no longer touches the right edge.
+- The Linux build on GitHub Actions also transcribes an English clip with automatic detection
+  and takes a screenshot of the window in every language.
+
 ## 1.3.0 — 2026-11-05
 
 - **Linux x86_64 installer**: `NeonVerbale-<version>-linux-x86_64.run`, a self-extracting file
