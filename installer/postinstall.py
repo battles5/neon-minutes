@@ -41,8 +41,8 @@ NOMINAL_SPEED = 8e6
 # No user site-packages and no PYTHON* variables: a Python already on the PC must not leak in
 # (on Windows the runtime's ._pth file already does this).
 PY = ["-s", "-E"]
-REPAIR_HINT = ("Start > Neon Verbale > Ripara componenti" if sys.platform == "win32"
-               else "il comando \"neon-verbale --ripara\"")
+REPAIR_HINT = ("Start > Neon Minutes > Ripara componenti" if sys.platform == "win32"
+               else "il comando \"neon-minutes --ripara\"")
 
 
 def user_data_dir(app: Path) -> Path:
@@ -296,7 +296,7 @@ def main() -> int:
         seconds = sizes["install_seconds"]
         model = "large-v3" if variant == "cuda" else "large-v3-turbo"
         torch_version = (installer / "torch-version.txt").read_text(encoding="utf-8").strip()
-        log(f"Neon Verbale {version}: installazione dei componenti")
+        log(f"Neon Minutes {version}: installazione dei componenti")
         log(f"Modalità: {'GPU NVIDIA' if variant == 'cuda' else 'CPU'} ({reason})")
 
         steps = [

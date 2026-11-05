@@ -1,4 +1,4 @@
-# Builds dist\NeonVerbale-Setup-<version>.exe
+# Builds dist\NeonMinutes-Setup-<version>.exe
 #
 #   powershell -ExecutionPolicy Bypass -File installer\build_installer.ps1
 #
@@ -29,7 +29,7 @@ function Copy-Utf8Bom($src, $dest) {
 }
 
 $version = (& $py -c "import sys; sys.path.insert(0, r'$root'); import meeting_transcriber; print(meeting_transcriber.__version__)").Trim()
-Step "Neon Verbale $version"
+Step "Neon Minutes $version"
 
 Step "Cartella di staging"
 if (Test-Path $stage) { Remove-Item -Recurse -Force $stage }
@@ -77,5 +77,5 @@ Copy-Utf8Bom "$PSScriptRoot\requisiti.txt" "$build\requisiti.txt"
 & $iscc "/DAppVersion=$version" "/DStage=$stage" @sizeDefines "/O$dist" "$build\setup.iss"
 if ($LASTEXITCODE) { throw "ISCC non riuscito" }
 
-$exe = Get-Item (Join-Path $dist "NeonVerbale-Setup-$version.exe")
+$exe = Get-Item (Join-Path $dist "NeonMinutes-Setup-$version.exe")
 Step ("Fatto: {0} ({1:N0} MB)" -f $exe.FullName, ($exe.Length / 1MB))

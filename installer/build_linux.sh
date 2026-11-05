@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Builds dist/NeonVerbale-<version>-linux-x86_64.run (run on Linux, see .github/workflows/linux.yml).
+# Builds dist/NeonMinutes-<version>-linux-x86_64.run (run on Linux, see .github/workflows/linux.yml).
 #
 #   bash installer/build_linux.sh <python of the build venv> <pyannote model .tar.gz>
 #
@@ -19,7 +19,7 @@ RUNTIME_URL="https://github.com/astral-sh/python-build-standalone/releases/downl
 RUNTIME_SHA256="731af898886c5f821890dc901eca3c651cca8e51fa7308c159d12a1194aeac91"
 
 VERSION="$("$PY" -c "import sys; sys.path.insert(0, '$ROOT'); import meeting_transcriber; print(meeting_transcriber.__version__)")"
-echo "== Neon Verbale $VERSION per Linux"
+echo "== Neon Minutes $VERSION per Linux"
 rm -rf "$STAGE"
 mkdir -p "$STAGE" "$CACHE" "$DIST"
 
@@ -47,7 +47,7 @@ echo "== Versioni delle dipendenze, avvisi di terze parti, dimensioni"
 "$PY" "$ROOT/installer/linux_prepare.py" "$STAGE"
 
 echo "== Pacchetto autoestraente"
-OUT="$DIST/NeonVerbale-$VERSION-linux-x86_64.run"
+OUT="$DIST/NeonMinutes-$VERSION-linux-x86_64.run"
 tar -czf "$BUILD/payload.tar.gz" -C "$BUILD" payload
 cat "$ROOT/installer/linux_header.sh" "$BUILD/payload.tar.gz" > "$OUT"
 chmod +x "$OUT"

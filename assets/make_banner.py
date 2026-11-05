@@ -79,9 +79,9 @@ def main():
     img.paste(Image.new("RGB", (w, h), (255, 120, 235)), (0, 0), grid)
 
     title = ImageFont.truetype(str(FONTS / "seguibli.ttf"), 132 * SS)
-    neon_text(img, "NEON VERBALE", title, (cx, int(h * 0.36)), (45, 226, 230), (230, 255, 255))
+    neon_text(img, "NEON MINUTES", title, (cx, int(h * 0.36)), (45, 226, 230), (230, 255, 255))
     sub = ImageFont.truetype(str(FONTS / "bahnschrift.ttf"), 30 * SS)
-    neon_text(img, "V E R B A L I   A L   N E O N  ·  trascrizione locale delle riunioni", sub,
+    neon_text(img, "N A M E S   I N   L I G H T S  ·  local meeting transcripts", sub,
               (cx, int(h * 0.58)), (255, 46, 220), (255, 225, 250))
 
     img.resize((W, H), Image.LANCZOS).save(OUT)

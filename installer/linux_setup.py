@@ -1,16 +1,16 @@
-"""Neon Verbale installer for Linux, run by the self-extracting .run file with the bundled Python.
+"""Neon Minutes installer for Linux, run by the self-extracting .run file with the bundled Python.
 
-    sh NeonVerbale-<version>-linux-x86_64.run [--cli] [-y] [--cpu] [--no-models] [--no-desktop]
+    sh NeonMinutes-<version>-linux-x86_64.run [--cli] [-y] [--cpu] [--no-models] [--no-desktop]
 
 With a graphical session it shows a small wizard (licence, hardware and space summary,
 progress with ETA, finish page); otherwise, or with --cli, it works in the terminal.
 Everything goes in the user's home, no root needed:
-  ~/.local/lib/neon-verbale            program, bundled Python, libraries (pip)
-  ~/.local/share/neon-verbale          data: voices, glossary, models (kept on uninstall)
-  ~/.local/bin/neon-verbale            launcher (GUI; --trascrivi, --ripara, --disinstalla)
+  ~/.local/lib/neon-minutes            program, bundled Python, libraries (pip)
+  ~/.local/share/neon-minutes          data: voices, glossary, models (kept on uninstall)
+  ~/.local/bin/neon-minutes            launcher (GUI; --trascrivi, --ripara, --disinstalla)
   ~/.local/share/applications/...      menu entry, plus the icon
 
-The installed copy keeps this script to uninstall:  neon-verbale --disinstalla
+The installed copy keeps this script to uninstall:  neon-minutes --disinstalla
 """
 
 import argparse
@@ -29,12 +29,15 @@ sys.path.insert(0, str(HERE))
 import postinstall  # noqa: E402  (hardware detection shared with Windows)
 
 HOME = Path.home()
-APP_DIR = HOME / ".local" / "lib" / "neon-verbale"
-BIN = HOME / ".local" / "bin" / "neon-verbale"
+APP_DIR = HOME / ".local" / "lib" / "neon-minutes"
+BIN = HOME / ".local" / "bin" / "neon-minutes"
 DATA_HOME = Path(os.environ.get("XDG_DATA_HOME") or HOME / ".local" / "share")
-DESKTOP_ENTRY = DATA_HOME / "applications" / "neon-verbale.desktop"
-ICON = DATA_HOME / "icons" / "hicolor" / "256x256" / "apps" / "neon-verbale.png"
-DATA_DIR = DATA_HOME / "neon-verbale"
+DESKTOP_ENTRY = DATA_HOME / "applications" / "neon-minutes.desktop"
+ICON = DATA_HOME / "icons" / "hicolor" / "256x256" / "apps" / "neon-minutes.png"
+DATA_DIR = DATA_HOME / "neon-minutes"
+# Called "Neon Verbale" in 1.3.0-1.4.0: an upgrade moves that installation here (see migrate_old_install).
+OLD_NAME = "neon-verbale"
+OLD_APP_DIR = HOME / ".local" / "lib" / OLD_NAME
 MIN_GLIBC = (2, 28)  # manylinux_2_28 wheels of PyTorch and ONNX Runtime
 COLORS = {"bg": "#140a2a", "panel": "#1e1040", "fg": "#ece6f7", "muted": "#a99bc4",
           "accent": "#ff2975", "cyan": "#2de2e6", "button": "#2c1858"}
@@ -122,15 +125,31 @@ class Plan:
 
 # --- installing -----------------------------------------------------------------------------
 
+def migrate_old_install():
+    """Move a "Neon Verbale" installation here (nothing to download again) and drop its launcher,
+    menu entry and icon. Its data folder is moved by the program itself (paths.py)."""
+    if OLD_APP_DIR.is_dir() and not APP_DIR.exists():
+        OLD_APP_DIR.rename(APP_DIR)
+        for pth in (APP_DIR / "runtime" / "lib").glob("python3.*/site-packages/neon_verbale.pth"):
+            pth.unlink()
+    desk = desktop_dir()
+    for path in (HOME / ".local" / "bin" / OLD_NAME, DATA_HOME / "applications" / f"{OLD_NAME}.desktop",
+                 DATA_HOME / "icons" / "hicolor" / "256x256" / "apps" / f"{OLD_NAME}.png",
+                 desk / f"{OLD_NAME}.desktop" if desk else None):
+        if path and (path.exists() or path.is_symlink()):
+            path.unlink()
+
+
 def copy_program(payload: Path):
     """Copy the payload into APP_DIR; on an upgrade the libraries pip installed stay."""
+    migrate_old_install()
     APP_DIR.mkdir(parents=True, exist_ok=True)
     for name in ("meeting_transcriber", "installer", "docs", "assets", "models"):
         shutil.rmtree(APP_DIR / name, ignore_errors=True)
     shutil.copytree(payload, APP_DIR, dirs_exist_ok=True, symlinks=True)
     site = next((APP_DIR / "runtime" / "lib").glob("python3.*")) / "site-packages"
     # A .pth file makes the program importable from any working directory.
-    (site / "neon_verbale.pth").write_text(str(APP_DIR) + "\n", encoding="utf-8")
+    (site / "neon_minutes.pth").write_text(str(APP_DIR) + "\n", encoding="utf-8")
 
 
 def run_postinstall(plan: Plan, wizard: bool, on_line=None) -> int:
@@ -157,7 +176,7 @@ def run_postinstall(plan: Plan, wizard: bool, on_line=None) -> int:
 
 
 LAUNCHER = """#!/bin/sh
-# Neon Verbale launcher (written by the installer).
+# Neon Minutes launcher (written by the installer).
 APP="{app}"
 PY="$APP/runtime/bin/python3"
 # CUDA libraries installed by pip (nvidia-*): CTranslate2 looks them up by name.
@@ -166,16 +185,16 @@ for d in "$APP"/runtime/lib/python3.*/site-packages/nvidia/*/lib; do
 done
 export LD_LIBRARY_PATH
 # -I: isolated, so neither the working directory (which may hold another copy of the code), the
-# user's site-packages nor PYTHON* variables get in; the program is found via neon_verbale.pth.
+# user's site-packages nor PYTHON* variables get in; the program is found via neon_minutes.pth.
 case "$1" in
     --trascrivi) shift; exec "$PY" -I -m meeting_transcriber "$@" ;;
     --ripara) exec "$PY" -I -u "$APP/installer/postinstall.py" --app "$APP" --variant auto --models ;;
     --disinstalla) shift; exec "$PY" -I "$APP/installer/linux_setup.py" --uninstall "$@" ;;
     -h|--help)
-        echo "neon-verbale [file...]           apre la finestra (con i file indicati)"
-        echo "neon-verbale --trascrivi file    trascrive da terminale (--help per le opzioni)"
-        echo "neon-verbale --ripara            reinstalla PyTorch e le librerie"
-        echo "neon-verbale --disinstalla       rimuove il programma"
+        echo "neon-minutes [file...]           apre la finestra (con i file indicati)"
+        echo "neon-minutes --trascrivi file    trascrive da terminale (--help per le opzioni)"
+        echo "neon-minutes --ripara            reinstalla PyTorch e le librerie"
+        echo "neon-minutes --disinstalla       rimuove il programma"
         exit 0 ;;
     *) exec "$PY" -I -m meeting_transcriber.gui "$@" ;;
 esac
@@ -183,15 +202,15 @@ esac
 
 DESKTOP = """[Desktop Entry]
 Type=Application
-Name=Neon Verbale
+Name=Neon Minutes
 GenericName=Trascrizione di riunioni
 Comment=Trascrivi le riunioni con i nomi di chi parla, tutto sul tuo PC
 Exec="{bin}" %F
-Icon=neon-verbale
+Icon=neon-minutes
 Terminal=false
 Categories=AudioVideo;Audio;Utility;
 MimeType=video/mp4;video/x-matroska;video/quicktime;video/webm;video/x-msvideo;audio/mpeg;audio/mp4;audio/x-wav;audio/ogg;
-StartupWMClass=Neon-verbale
+StartupWMClass=Neon-minutes
 Actions=guida;disinstalla;
 
 [Desktop Action guida]
@@ -199,7 +218,7 @@ Name=Guida
 Exec=xdg-open "{app}/docs/Guide.html"
 
 [Desktop Action disinstalla]
-Name=Disinstalla Neon Verbale
+Name=Disinstalla Neon Minutes
 Exec="{bin}" --disinstalla
 """
 
@@ -230,7 +249,7 @@ def create_shortcuts(desktop_icon: bool):
             pass
     desk = desktop_dir() if desktop_icon else None
     if desk:
-        link = desk / "neon-verbale.desktop"
+        link = desk / "neon-minutes.desktop"
         link.write_text(entry, encoding="utf-8")
         link.chmod(0o755)
         try:  # GNOME asks for confirmation before running untrusted launchers
@@ -250,7 +269,7 @@ def install(plan: Plan, desktop_icon: bool, wizard_lines=None) -> int:
 # --- terminal -------------------------------------------------------------------------------
 
 def terminal(args, plan: Plan) -> int:
-    print(f"\n  N E O N   V E R B A L E   {plan.version}\n  verbali al neon\n")
+    print(f"\n  N E O N   M I N U T E S   {plan.version}\n  names in lights\n")
     problems = plan.problems()
     print(plan.summary() + "\n")
     for p in problems:
@@ -261,9 +280,9 @@ def terminal(args, plan: Plan) -> int:
             return 1
     code = install(plan, desktop_icon=not args.no_desktop)
     if code == 0:
-        print(f"\nInstallato. Avvia «Neon Verbale» dal menu delle applicazioni, oppure: {BIN}")
+        print(f"\nInstallato. Avvia «Neon Minutes» dal menu delle applicazioni, oppure: {BIN}")
         if str(BIN.parent) not in os.environ.get("PATH", "").split(os.pathsep):
-            print(f"(Per usare il comando neon-verbale da terminale aggiungi {BIN.parent} al PATH.)")
+            print(f"(Per usare il comando neon-minutes da terminale aggiungi {BIN.parent} al PATH.)")
     else:
         print(f"\nInstallazione non riuscita. Dettagli in {APP_DIR / 'install.log'}; riprova con: {BIN} --ripara")
     return code
@@ -275,8 +294,8 @@ def wizard(args, plan: Plan) -> int:
     import tkinter as tk
     from tkinter import messagebox, ttk
 
-    root = tk.Tk(className="neon-verbale-setup")
-    root.title(f"Installazione di Neon Verbale {plan.version}")
+    root = tk.Tk(className="neon-minutes-setup")
+    root.title(f"Installazione di Neon Minutes {plan.version}")
     root.geometry("760x620")
     root.minsize(680, 560)
     root.configure(background=COLORS["bg"])
@@ -331,7 +350,7 @@ def wizard(args, plan: Plan) -> int:
     def page_license():
         f = ttk.Frame(body)
         ttk.Label(f, text="Contratto di licenza", style="Title.TLabel").pack(anchor="w")
-        ttk.Label(f, text="Neon Verbale è software libero: puoi usarlo, modificarlo e ridistribuirlo senza obblighi.",
+        ttk.Label(f, text="Neon Minutes è software libero: puoi usarlo, modificarlo e ridistribuirlo senza obblighi.",
                   style="Muted.TLabel").pack(anchor="w", pady=(2, 8))
         text_box(f, (plan.payload / "LICENSE.txt").read_text(encoding="utf-8"), 12).pack(fill="both", expand=True)
         ttk.Checkbutton(f, text="Accetto i termini della licenza", variable=accepted,
@@ -379,7 +398,7 @@ def wizard(args, plan: Plan) -> int:
         f.title.pack(anchor="w")
         f.message = ttk.Label(f, text="", wraplength=680, justify="left")
         f.message.pack(anchor="w", pady=(8, 14))
-        f.launch = ttk.Checkbutton(f, text="Avvia Neon Verbale", variable=launch)
+        f.launch = ttk.Checkbutton(f, text="Avvia Neon Minutes", variable=launch)
         f.launch.pack(anchor="w")
         f.guide = ttk.Checkbutton(f, text="Apri la guida", variable=guide)
         f.guide.pack(anchor="w")
@@ -411,7 +430,7 @@ def wizard(args, plan: Plan) -> int:
     def go_next():
         i = current["i"]
         if i == 1 and plan.problems() and not messagebox.askyesno(
-                "Neon Verbale", "Ci sono avvisi nel riepilogo. Continuare comunque?"):
+                "Neon Minutes", "Ci sono avvisi nel riepilogo. Continuare comunque?"):
             return
         if i < 3:
             show(i + 1)
@@ -450,8 +469,8 @@ def wizard(args, plan: Plan) -> int:
         if code == 0:
             fin.title.configure(text="Installazione completata")
             warning = next((l[4:] for l in lines if l.startswith("@@W|")), "")
-            fin.message.configure(text="Trovi «Neon Verbale» nel menu delle applicazioni. Da terminale: "
-                                       f"{BIN}\n\nPer disinstallarlo: neon-verbale --disinstalla"
+            fin.message.configure(text="Trovi «Neon Minutes» nel menu delle applicazioni. Da terminale: "
+                                       f"{BIN}\n\nPer disinstallarlo: neon-minutes --disinstalla"
                                        + (f"\n\n{warning}" if warning else ""))
         else:
             error = next((l[4:] for l in lines if l.startswith("@@E|")), "errore sconosciuto")
@@ -495,19 +514,19 @@ def uninstall(args) -> int:
             from tkinter import Tk, messagebox
             root = Tk()
             root.withdraw()
-            answer = messagebox.askyesno("Neon Verbale", question)
+            answer = messagebox.askyesno("Neon Minutes", question)
             root.destroy()
             return answer
         reply = input(f"{question} [{'S/n' if default else 's/N'}] ").strip().lower()
         return default if not reply else reply in ("s", "si", "sì", "y", "yes")
 
-    if not ask("Disinstallare Neon Verbale?", True):
+    if not ask("Disinstallare Neon Minutes?", True):
         return 1
     remove_data = args.remove_data or (not args.yes and DATA_DIR.exists() and ask(
         f"Eliminare anche modelli scaricati, libreria delle voci e glossario?\n\n{DATA_DIR}\n\n"
         "Le trascrizioni accanto ai video restano dove sono.", False))
     desk = desktop_dir()
-    for path in (BIN, DESKTOP_ENTRY, ICON, desk / "neon-verbale.desktop" if desk else None):
+    for path in (BIN, DESKTOP_ENTRY, ICON, desk / "neon-minutes.desktop" if desk else None):
         if path and path.exists():
             path.unlink()
     shutil.rmtree(APP_DIR, ignore_errors=True)
@@ -517,12 +536,12 @@ def uninstall(args) -> int:
         subprocess.run(["update-desktop-database", str(DESKTOP_ENTRY.parent)], capture_output=True, timeout=30)
     except (OSError, subprocess.TimeoutExpired):
         pass
-    print("Neon Verbale è stato rimosso." + ("" if remove_data else f" I dati restano in {DATA_DIR}."))
+    print("Neon Minutes è stato rimosso." + ("" if remove_data else f" I dati restano in {DATA_DIR}."))
     return 0
 
 
 def main() -> int:
-    p = argparse.ArgumentParser(prog="NeonVerbale-linux-x86_64.run")
+    p = argparse.ArgumentParser(prog="NeonMinutes-linux-x86_64.run")
     p.add_argument("--payload", type=Path, default=HERE.parent, help=argparse.SUPPRESS)
     p.add_argument("--cli", action="store_true", help="installa da terminale, senza finestra")
     p.add_argument("-y", "--yes", action="store_true", help="non chiedere conferme")

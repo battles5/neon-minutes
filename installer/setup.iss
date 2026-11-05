@@ -1,4 +1,4 @@
-; Setup wizard of Neon Verbale. Built by installer\build_installer.ps1, which passes:
+; Setup wizard of Neon Minutes. Built by installer\build_installer.ps1, which passes:
 ;   /DAppVersion=x.y.z  /DStage=<staging folder>  /O<output folder>
 ;   and the download/disk sizes measured at build time (MB): DlTorchCuda, DlTorchCpu, DlDeps,
 ;   DlModelCuda, DlModelCpu, InstCuda, InstCpu
@@ -21,7 +21,7 @@
   #define InstCuda "5500"
   #define InstCpu "1300"
 #endif
-#define AppName "Neon Verbale"
+#define AppName "Neon Minutes"
 #define AppExe "{app}\runtime\pythonw.exe"
 #define AppArgs "-m meeting_transcriber.gui"
 
@@ -31,7 +31,7 @@ AppName={#AppName}
 AppVersion={#AppVersion}
 AppVerName={#AppName} {#AppVersion}
 AppPublisher=Orso Peruzzi
-AppPublisherURL=https://github.com/battles5/neon-verbale
+AppPublisherURL=https://github.com/battles5/neon-minutes
 AppComments=Trascrizione locale delle riunioni con i nomi di chi parla
 DefaultDirName={localappdata}\Programs\{#AppName}
 DefaultGroupName={#AppName}
@@ -50,7 +50,7 @@ UninstallDisplayName={#AppName}
 WizardStyle=modern
 Compression=lzma2/max
 SolidCompression=yes
-OutputBaseFilename=NeonVerbale-Setup-{#AppVersion}
+OutputBaseFilename=NeonMinutes-Setup-{#AppVersion}
 ; Only the setup's own files; downloads and their space are checked on the hardware page.
 ExtraDiskSpaceRequired=0
 CloseApplications=yes
@@ -73,10 +73,13 @@ Name: "{autoprograms}\{#AppName}\Disinstalla"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#AppName}"; Filename: "{#AppExe}"; Parameters: "{#AppArgs}"; WorkingDir: "{app}"; IconFilename: "{app}\assets\piuma.ico"; Tasks: desktopicon
 
 [InstallDelete]
-; Up to 1.1.0 the program was called "Trascrittore riunioni" (same AppId, so this is an upgrade):
-; drop the shortcuts with the old name, the new ones are created below.
+; The program was called "Trascrittore riunioni" up to 1.1.0 and "Neon Verbale" from 1.2.0 to 1.4.0
+; (same AppId, so this is an upgrade): drop the shortcuts with the old names, the new ones are
+; created below. The program folder itself is moved in PrepareToInstall.
 Type: filesandordirs; Name: "{autoprograms}\Trascrittore riunioni"
 Type: files; Name: "{autodesktop}\Trascrittore riunioni.lnk"
+Type: filesandordirs; Name: "{autoprograms}\Neon Verbale"
+Type: files; Name: "{autodesktop}\Neon Verbale.lnk"
 ; The user guide was docs\Guida.html up to 1.3.0's English docs.
 Type: files; Name: "{app}\docs\Guida.html"
 
@@ -233,6 +236,7 @@ end;
 procedure InitializeWizard();
 begin
   DetectHardware();
+  ProposeRenamedDir();
   { A read-only memo rather than a label: the summary is filled in later (it depends on the }
   { tasks chosen) and a label keeps the height it had when it was empty. }
   HardwarePage := CreateCustomPage(wpSelectTasks, 'Verifica dell''hardware e spazio necessario',
@@ -245,6 +249,71 @@ begin
   HardwareMemo.ScrollBars := ssVertical;
   ProgressPage := CreateOutputProgressPage('Installazione dei componenti',
     'Scarico e installo PyTorch, le librerie e il modello Whisper. Puoi continuare a usare il PC.');
+end;
+
+{ --- upgrade from an older name ------------------------------------------------------------- }
+
+const
+  UninstallKey = 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{6F2B4E61-3C1D-4B8A-9E57-2A9D0C7B5F13}_is1';
+
+{ Folder of the installed copy, if its name is one of the program's old names. }
+function OldAppDir(): String;
+var
+  Name: String;
+begin
+  Result := '';
+  if RegQueryStringValue(HKCU, UninstallKey, 'Inno Setup: App Path', Result) then begin
+    Name := ExtractFileName(RemoveBackslashUnlessRoot(Result));
+    if (CompareText(Name, 'Neon Verbale') <> 0) and (CompareText(Name, 'Trascrittore riunioni') <> 0) then
+      Result := '';
+  end else
+    Result := '';
+end;
+
+{ Propose the old folder's sibling with the new name: PrepareToInstall moves it there. }
+procedure ProposeRenamedDir();
+var
+  Old: String;
+begin
+  Old := OldAppDir();
+  if Old <> '' then
+    WizardForm.DirEdit.Text := AddBackslash(ExtractFilePath(RemoveBackslashUnlessRoot(Old))) + '{#AppName}';
+end;
+
+{ Move the old installation (bundled Python and libraries included) to the new folder, so the }
+{ upgrade downloads nothing; the old uninstaller goes, the setup writes a new one. }
+function PrepareToInstall(var NeedsRestart: Boolean): String;
+var
+  Old, New: String;
+begin
+  Result := '';
+  Old := RemoveBackslashUnlessRoot(OldAppDir());
+  New := RemoveBackslashUnlessRoot(WizardDirValue());
+  if (Old = '') or not DirExists(Old) or DirExists(New) or (CompareText(Old, New) = 0) then
+    Exit;
+  if not RenameFile(Old, New) then begin
+    Result := 'Non riesco a spostare la versione installata da' + #13#10 + Old + #13#10 + 'a' + #13#10 + New +
+      #13#10#13#10 + 'Chiudi Neon Verbale (anche le trascrizioni in corso) e riprova.';
+    Exit;
+  end;
+  Log('Installazione precedente spostata da ' + Old + ' a ' + New);
+  DelTree(New + '\unins*.*', False, True, False);
+end;
+
+{ An icon pinned to the taskbar points to the old folder: keep it working. }
+procedure RefreshPinnedIcons();
+var
+  Dir: String;
+  I: Integer;
+  Names: array[0..1] of String;
+begin
+  Dir := ExpandConstant('{userappdata}\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\');
+  Names[0] := 'Neon Verbale.lnk';
+  Names[1] := 'Trascrittore riunioni.lnk';
+  for I := 0 to 1 do
+    if FileExists(Dir + Names[I]) then
+      CreateShellLink(Dir + Names[I], '{#AppName}', ExpandConstant('{#AppExe}'), '{#AppArgs}',
+        ExpandConstant('{app}'), ExpandConstant('{app}\assets\piuma.ico'), 0, SW_SHOWNORMAL);
 end;
 
 procedure CurPageChanged(CurPageID: Integer);
@@ -318,6 +387,7 @@ begin
   if CurStep = ssInstall then
     Log('Riepilogo mostrato all''utente:' + #13#10 + SummaryText());
   if CurStep <> ssPostInstall then Exit;
+  RefreshPinnedIcons();
   Params := '-u "' + ExpandConstant('{app}\installer\postinstall.py') + '" --app "' + ExpandConstant('{app}') +
     '" --variant ' + GpuVariant + ' --wizard';
   if WizardIsTaskSelected('modelli') then Params := Params + ' --models';
@@ -345,7 +415,7 @@ begin
   end;
   if not PostInstallOk then
     SuppressibleMsgBox('Il programma è installato ma non ancora pronto. Quando la connessione funziona, apri' + #13#10 +
-      'Start > Neon Verbale > Ripara componenti.', mbInformation, MB_OK, IDOK)
+      'Start > Neon Minutes > Ripara componenti.', mbInformation, MB_OK, IDOK)
   else if GpuWarning <> '' then
     SuppressibleMsgBox(GpuWarning, mbInformation, MB_OK, IDOK);
 end;

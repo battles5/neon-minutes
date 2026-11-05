@@ -1,7 +1,7 @@
-THIRD-PARTY NOTICES — Neon Verbale
+THIRD-PARTY NOTICES — Neon Minutes
 ==================================
 
-The Neon Verbale code is distributed under the MIT No Attribution licence
+The Neon Minutes code is distributed under the MIT No Attribution licence
 (see LICENSE.txt). The program relies on third-party components, each with its
 own licence, listed below.
 

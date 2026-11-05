@@ -140,7 +140,7 @@ class App:
         # sequence (two threads loading the CUDA libraries at once can deadlock).
         self.prep = ThreadPoolExecutor(max_workers=1)
 
-        root.title("Neon Verbale")
+        root.title("Neon Minutes")
         root.geometry("920x640")
         root.minsize(700, 460)
         root.protocol("WM_DELETE_WINDOW", self.on_close)
@@ -440,7 +440,7 @@ class App:
             if kind in ("done", "error") and not self.busy():
                 self.auto = False
                 if self.batch_errors:
-                    messagebox.showwarning("Neon Verbale", t("not_completed", n=self.batch_errors))
+                    messagebox.showwarning("Neon Minutes", t("not_completed", n=self.batch_errors))
                 self.batch_errors = 0
         self.refresh()
         self.root.after(TICK_MS, self.tick)
@@ -525,10 +525,10 @@ class App:
         if path.exists():
             open_path(path)
         else:
-            messagebox.showinfo("Neon Verbale", t("file_not_found", path=path))
+            messagebox.showinfo("Neon Minutes", t("file_not_found", path=path))
 
     def on_close(self):
-        if self.busy() and not messagebox.askyesno("Neon Verbale", t("confirm_close")):
+        if self.busy() and not messagebox.askyesno("Neon Minutes", t("confirm_close")):
             return
         self.root.destroy()
         os._exit(0)  # the worker thread may be inside a GPU call
@@ -546,7 +546,7 @@ def main(files: list[str] | None = None):
             ctypes.windll.shcore.SetProcessDpiAwareness(1)
         except Exception:
             pass
-    root = tk.Tk(className="neon-verbale")  # WM_CLASS, matched by the Linux .desktop entry
+    root = tk.Tk(className="neon-minutes")  # WM_CLASS, matched by the Linux .desktop entry
     if ICON.exists() and sys.platform == "win32":
         root.iconbitmap(default=str(ICON))
     elif ICON_PNG.exists():

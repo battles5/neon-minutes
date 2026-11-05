@@ -1,4 +1,4 @@
-"""Draw the Neon Verbale icon: a neon quill over a striped synthwave sun.
+"""Draw the Neon Minutes icon: a neon quill over a striped synthwave sun.
 
     python assets/make_icon.py   -> assets/piuma.ico (all sizes) and assets/piuma.png
 """

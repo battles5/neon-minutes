@@ -1,13 +1,13 @@
 <p align="center">
-  <img src="assets/banner.png" alt="NEON VERBALE — neon minutes">
+  <img src="assets/banner.png" alt="NEON MINUTES — names in lights">
 </p>
 
-<h1 align="center"><img src="assets/piuma.png" width="40" alt=""> NEON VERBALE</h1>
+<h1 align="center"><img src="assets/piuma.png" width="40" alt=""> NEON MINUTES</h1>
 
 <p align="center">
-  <em>ｎｅｏｎ　ｍｉｎｕｔｅｓ</em> — meeting transcripts with the name of whoever is speaking, entirely on your own PC.<br>
-  <sub>Formerly <em>Trascrittore riunioni</em> (up to version 1.1.0).</sub><br>
-  <a href="https://github.com/battles5/neon-verbale/releases/latest"><strong>Download for Windows or Linux</strong></a>
+  <em>ｎａｍｅｓ　ｉｎ　ｌｉｇｈｔｓ</em> — meeting transcripts with the name of whoever is speaking, entirely on your own PC.<br>
+  <sub>Formerly <em>Neon Verbale</em> (1.2.0–1.4.0) and <em>Trascrittore riunioni</em> (up to 1.1.0).</sub><br>
+  <a href="https://github.com/battles5/neon-minutes/releases/latest"><strong>Download for Windows or Linux</strong></a>
   ·
   <a href="docs/Guide.html">User guide</a>
   ·
@@ -18,7 +18,7 @@
   <img alt="License MIT-0" src="https://img.shields.io/badge/license-MIT--0-ff2975">
   <img alt="Windows 10/11" src="https://img.shields.io/badge/Windows-10%20%7C%2011-2de2e6">
   <img alt="Linux x86_64" src="https://img.shields.io/badge/Linux-x86__64-2de2e6">
-  <img alt="Linux build" src="https://github.com/battles5/neon-verbale/actions/workflows/linux.yml/badge.svg">
+  <img alt="Linux build" src="https://github.com/battles5/neon-minutes/actions/workflows/linux.yml/badge.svg">
   <img alt="Python 3.12" src="https://img.shields.io/badge/Python-3.12-ffd640">
   <img alt="Offline" src="https://img.shields.io/badge/processing-100%25%20local-b026ff">
 </p>
@@ -38,6 +38,15 @@ No account, no cloud service: audio, video and transcripts never leave your comp
 > The window speaks English, Italian, Spanish, French, Portuguese and Chinese, and meetings can be
 > transcribed in any of those languages or with automatic language detection. The installers and
 > the output files (`Trascrizioni` folder, `trascrizione.md`) are in Italian.
+
+## Why "neon"?
+
+- **Words written in light.** A neon sign is a word drawn with light. Neon Minutes does the same with
+  what people say in a meeting: spoken words become text you can see, search and keep.
+- **Names in lights.** Teams lights up the name of whoever is talking with a glowing purple box.
+  That glow is how the program knows who said what: it reads the names while they are lit.
+- **Inert by design.** Neon is a noble gas: it reacts with nothing and stays where it is. So do your
+  recordings, transcripts and voiceprints: everything is processed on your PC, nothing goes online.
 
 ## Features
 
@@ -93,8 +102,8 @@ At every start the program chooses GPU or CPU.
 
 ### Windows
 
-1. Download `NeonVerbale-Setup-<version>.exe` from the
-   [Releases](https://github.com/battles5/neon-verbale/releases/latest).
+1. Download `NeonMinutes-Setup-<version>.exe` from the
+   [Releases](https://github.com/battles5/neon-minutes/releases/latest).
 2. Run it. The setup is not digitally signed: if Windows shows "Windows protected your PC",
    choose *More info* → *Run anyway*.
 3. Follow the wizard. The **Verifica dell'hardware e spazio necessario** page (*hardware check and
@@ -104,43 +113,45 @@ At every start the program chooses GPU or CPU.
    GB downloaded, the speed and the time left. With a GPU it takes about 15-30 minutes depending on
    the connection (13 minutes measured on a fast line); with the CPU build about 10-15 minutes.
 
-The installation is per user, in `%LOCALAPPDATA%\Programs\Neon Verbale`, with a desktop shortcut
+The installation is per user, in `%LOCALAPPDATA%\Programs\Neon Minutes`, with a desktop shortcut
 (the neon quill) and a Start menu folder that also holds the guide and *Ripara componenti*
 (*repair components*).
 
-**Upgrading from *Trascrittore riunioni* (1.1.0 or earlier):** just run the new setup. It installs
-over the existing version, in the same folder, replaces the shortcuts with the new ones and, at
-the first start, moves voices, glossary and downloaded models under the new name.
+**Upgrading from *Neon Verbale* or *Trascrittore riunioni*:** just run the new setup. It moves the
+existing installation to the new folder, replaces the shortcuts with the new ones and moves voices,
+glossary and downloaded models under the new name: nothing is downloaded again. An icon pinned to
+the taskbar keeps working; pin it again if you want it to show the new name. On Linux the `.run`
+file does the same with `~/.local/lib/neon-verbale` and the `neon-verbale` command.
 
 ### Linux
 
-1. Download `NeonVerbale-<version>-linux-x86_64.run` from the
-   [Releases](https://github.com/battles5/neon-verbale/releases/latest).
+1. Download `NeonMinutes-<version>-linux-x86_64.run` from the
+   [Releases](https://github.com/battles5/neon-minutes/releases/latest).
 2. Run it from a terminal, or make it executable and double-click it:
    ```bash
-   sh NeonVerbale-<version>-linux-x86_64.run
+   sh NeonMinutes-<version>-linux-x86_64.run
    ```
 3. On a graphical desktop a wizard opens: licence, then the hardware and space check (GPU or CPU
    build, GB to download, space, time), then the progress with the time left. Without a desktop,
    or with `--cli`, the same steps run in the terminal.
 
-No `sudo` and no system packages are needed. The program goes in `~/.local/lib/neon-verbale` and
-its data in `~/.local/share/neon-verbale`. The installer adds an entry to the applications menu and
-the command `~/.local/bin/neon-verbale`:
+No `sudo` and no system packages are needed. The program goes in `~/.local/lib/neon-minutes` and
+its data in `~/.local/share/neon-minutes`. The installer adds an entry to the applications menu and
+the command `~/.local/bin/neon-minutes`:
 
 | Command | What it does |
 |---|---|
-| `neon-verbale [video…]` | opens the window, with the given videos already in the list |
-| `neon-verbale --trascrivi video.mp4` | transcribes from the terminal (`--trascrivi --help` for the options) |
-| `neon-verbale --ripara` | reinstalls PyTorch and the libraries, for example after updating the NVIDIA driver |
-| `neon-verbale --disinstalla` | removes the program; asks whether to keep models and voice library |
+| `neon-minutes [video…]` | opens the window, with the given videos already in the list |
+| `neon-minutes --trascrivi video.mp4` | transcribes from the terminal (`--trascrivi --help` for the options) |
+| `neon-minutes --ripara` | reinstalls PyTorch and the libraries, for example after updating the NVIDIA driver |
+| `neon-minutes --disinstalla` | removes the program; asks whether to keep models and voice library |
 
 Installer options: `--cli` (terminal only), `-y` (no questions), `--cpu` (CPU build even with an
 NVIDIA GPU), `--no-models` (download Whisper at first use), `--no-desktop` (no desktop shortcut).
 
 ## Usage
 
-1. Open **Neon Verbale**.
+1. Open **Neon Minutes**.
 2. Pick the **Meeting language** (Italian, English, Spanish, French, Portuguese, Chinese, or
    *Detect automatically*). The **Interface** menu on the right changes the window's language.
 3. Click **Add videos…** and pick one or more recordings (mp4, mkv, mov, avi, webm, or audio only:
@@ -229,9 +240,9 @@ and speaker separation about 0.65 times.
 
 | What | Windows | Linux |
 |---|---|---|
-| Program | `%LOCALAPPDATA%\Programs\Neon Verbale` | `~/.local/lib/neon-verbale` |
-| Voice library, glossary, timings, logs | `%LOCALAPPDATA%\Neon Verbale` | `~/.local/share/neon-verbale` |
-| Downloaded Whisper models | `…\Neon Verbale\modelli` | `~/.local/share/neon-verbale/modelli` |
+| Program | `%LOCALAPPDATA%\Programs\Neon Minutes` | `~/.local/lib/neon-minutes` |
+| Voice library, glossary, timings, logs | `%LOCALAPPDATA%\Neon Minutes` | `~/.local/share/neon-minutes` |
+| Downloaded Whisper models | `…\Neon Minutes\modelli` | `~/.local/share/neon-minutes/modelli` |
 | Transcripts | `Trascrizioni` folder next to each video | same |
 
 The program connects to the Internet only to download its components. When uninstalling you can
@@ -268,7 +279,7 @@ The script:
 2. isolates it with a `._pth` file, so a Python already on the user's PC cannot interfere;
 3. copies the program, the guide and the pyannote model;
 4. pins the exact dependency versions from the `.venv` (`requirements-lock.txt`);
-5. writes the third-party notices and compiles `dist\NeonVerbale-Setup-<version>.exe`.
+5. writes the third-party notices and compiles `dist\NeonMinutes-Setup-<version>.exe`.
 
 PyTorch (CUDA or CPU build) and Whisper are downloaded on the user's PC during installation, by
 `installer\postinstall.py`.
@@ -277,7 +288,7 @@ PyTorch (CUDA or CPU build) and Whisper are downloaded on the user's PC during i
 for every `v*` tag, or by hand from the *Actions* tab. The workflow:
 
 1. creates an environment with the versions tested on Windows (`installer/constraints.txt`);
-2. takes the pyannote model from the [`modelli-1`](https://github.com/battles5/neon-verbale/releases/tag/modelli-1)
+2. takes the pyannote model from the [`modelli-1`](https://github.com/battles5/neon-minutes/releases/tag/modelli-1)
    release, so CI needs no token;
 3. assembles the self-extracting `.run` with `installer/build_linux.sh`: portable Python, program,
    model, guide, plus the `installer/linux_setup.py` wizard;
@@ -333,4 +344,4 @@ installed with the program.
 Created by **Orso Peruzzi** ([@battles5](https://github.com/battles5)) and developed together with
 **Claude** (Anthropic), who contributed to the design, code, installers and documentation.
 
-Bug reports and ideas are welcome in the [issues](https://github.com/battles5/neon-verbale/issues).
+Bug reports and ideas are welcome in the [issues](https://github.com/battles5/neon-minutes/issues).

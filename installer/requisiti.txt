@@ -1,6 +1,6 @@
 PRIMA DI INSTALLARE
 
-Neon Verbale trascrive le registrazioni delle riunioni e separa chi parla, con il
+Neon Minutes trascrive le registrazioni delle riunioni e separa chi parla, con il
 nome quando il video di Teams lo mostra. Tutto avviene sul tuo PC: audio e contenuti non
 vengono inviati a nessun servizio esterno.
 

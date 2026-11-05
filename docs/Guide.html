@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Neon Verbale user guide</title>
+<title>Neon Minutes user guide</title>
 <style>
   :root {
     --bg: #fbfbfd; --fg: #1d1d27; --muted: #5b5b6b; --line: #e3e3ec; --card: #ffffff;
@@ -46,13 +46,13 @@
 </head>
 <body>
 <header>
-  <img class="banner" src="../assets/banner.png" alt="NEON VERBALE — neon minutes">
+  <img class="banner" src="../assets/banner.png" alt="NEON MINUTES — names in lights">
   <div class="wrap">
     <img src="../assets/piuma.png" alt="">
     <div>
-      <h1>Neon Verbale</h1>
+      <h1>Neon Minutes</h1>
       <p>Meeting transcripts with the name of whoever is speaking, entirely on your own PC.
-        Formerly <em>Trascrittore riunioni</em> (up to version 1.1.0).</p>
+        Formerly <em>Neon Verbale</em> (1.2.0–1.4.0) and <em>Trascrittore riunioni</em> (up to 1.1.0).</p>
     </div>
   </div>
 </header>
@@ -93,6 +93,10 @@ recording) and produces:</p>
   <li><strong>subtitles</strong> to use with the video.</li>
 </ul>
 <p>It works without accounts or cloud services: everything is processed on your computer.</p>
+<p><strong>Why "neon"?</strong> A neon sign is a word written in light, and this program turns what people
+say into words you can see. Teams lights up the speaker's name in a glowing purple box, and that glow is how
+the program knows who is talking: names in lights. And neon is an inert gas that reacts with nothing, just as
+your recordings never leave your PC.</p>
 
 <h2 id="requirements">2. Requirements</h2>
 <table>
@@ -116,7 +120,7 @@ installs the right build. Afterwards, the program picks GPU or CPU by itself at 
 <h2 id="installation">3. Installation</h2>
 <h3>Windows</h3>
 <ol>
-  <li>Run <code>NeonVerbale-Setup-&lt;version&gt;.exe</code>.</li>
+  <li>Run <code>NeonMinutes-Setup-&lt;version&gt;.exe</code>.</li>
   <li>If <strong>"Windows protected your PC"</strong> appears: the program is not digitally signed.
     Choose <em>More info</em> and then <em>Run anyway</em>.</li>
   <li>Follow the wizard pages: licence, requirements, folder (the proposed one is fine), options.
@@ -132,37 +136,38 @@ installs the right build. Afterwards, the program picks GPU or CPU by itself at 
     with the CPU build about 10-15 minutes. You can keep using the PC meanwhile.</li>
   <li>At the end you can start the program right away.</li>
 </ol>
-<div class="note"><strong>Upgrading from <em>Trascrittore riunioni</em></strong> (1.1.0 or earlier): just run the
-new setup. It installs over the existing version, in the same folder, replaces the shortcuts with the new
-ones and, at the first start, moves voices, glossary and downloaded models under the new name.</div>
-<p>The installer creates the desktop shortcut (the quill) and a <em>Neon Verbale</em> folder in the Start
+<div class="note"><strong>Upgrading from <em>Neon Verbale</em> or <em>Trascrittore riunioni</em></strong>: just run
+the new setup. It moves the existing installation to the new folder, replaces the shortcuts with the new ones
+and moves voices, glossary and downloaded models under the new name, so nothing is downloaded again. An icon
+pinned to the taskbar keeps working; pin it again if you want it to show the new name.</div>
+<p>The installer creates the desktop shortcut (the quill) and a <em>Neon Minutes</em> folder in the Start
 menu, with the program, this guide, <em>Ripara componenti</em> (<em>repair components</em>) and
 <em>Disinstalla</em> (<em>uninstall</em>).</p>
 <div class="warn">If installing the components fails (usually because of the connection or a corporate
 proxy), the wizard offers to try again. You can also retry later from
-<strong>Start → Neon Verbale → Ripara componenti</strong>.</div>
+<strong>Start → Neon Minutes → Ripara componenti</strong>.</div>
 
 <h3 id="linux">Linux</h3>
 <p>You need an x86_64 PC with a recent distribution (glibc 2.28 or later: Ubuntu 20.04+, Debian 10+,
 Fedora 29+ and similar). No <code>sudo</code> and no system packages are needed.</p>
 <ol>
-  <li>Download <code>NeonVerbale-&lt;version&gt;-linux-x86_64.run</code> from the
-    <a href="https://github.com/battles5/neon-verbale/releases/latest">Releases</a> page.</li>
-  <li>Run it with <code>sh NeonVerbale-&lt;version&gt;-linux-x86_64.run</code>, or make it executable
+  <li>Download <code>NeonMinutes-&lt;version&gt;-linux-x86_64.run</code> from the
+    <a href="https://github.com/battles5/neon-minutes/releases/latest">Releases</a> page.</li>
+  <li>Run it with <code>sh NeonMinutes-&lt;version&gt;-linux-x86_64.run</code>, or make it executable
     (right click → Properties → Allow executing) and double-click it.</li>
   <li>The wizard opens: licence, then the <strong>hardware check and required space</strong> (GPU or CPU
     build, GB to download, space, time), then the progress with the time left. Without a graphical
     desktop, or with the <code>--cli</code> option, the same steps run in the terminal.</li>
 </ol>
-<p>The program goes in <code>~/.local/lib/neon-verbale</code> and its data in <code>~/.local/share/neon-verbale</code>.
-You find <strong>Neon Verbale</strong> in the applications menu; in a terminal there is the command
-<code>~/.local/bin/neon-verbale</code>:</p>
+<p>The program goes in <code>~/.local/lib/neon-minutes</code> and its data in <code>~/.local/share/neon-minutes</code>.
+You find <strong>Neon Minutes</strong> in the applications menu; in a terminal there is the command
+<code>~/.local/bin/neon-minutes</code>:</p>
 <table>
   <tr><th>Command</th><th>What it does</th></tr>
-  <tr><td><code>neon-verbale [video…]</code></td><td>opens the window, with the given videos already in the list</td></tr>
-  <tr><td><code>neon-verbale --trascrivi video.mp4</code></td><td>transcribes from the terminal (see <a href="#command-line">Command line</a>)</td></tr>
-  <tr><td><code>neon-verbale --ripara</code></td><td>reinstalls PyTorch and the libraries, for example after updating the NVIDIA driver</td></tr>
-  <tr><td><code>neon-verbale --disinstalla</code></td><td>removes the program, asking whether to keep models and voice library (also from the menu: right click on the icon → Disinstalla)</td></tr>
+  <tr><td><code>neon-minutes [video…]</code></td><td>opens the window, with the given videos already in the list</td></tr>
+  <tr><td><code>neon-minutes --trascrivi video.mp4</code></td><td>transcribes from the terminal (see <a href="#command-line">Command line</a>)</td></tr>
+  <tr><td><code>neon-minutes --ripara</code></td><td>reinstalls PyTorch and the libraries, for example after updating the NVIDIA driver</td></tr>
+  <tr><td><code>neon-minutes --disinstalla</code></td><td>removes the program, asking whether to keep models and voice library (also from the menu: right click on the icon → Disinstalla)</td></tr>
 </table>
 <p>Installer options: <code>--cli</code> (terminal only), <code>-y</code> (no questions),
 <code>--cpu</code> (CPU build even with an NVIDIA GPU), <code>--no-models</code> (download Whisper at first use),
@@ -170,7 +175,7 @@ You find <strong>Neon Verbale</strong> in the applications menu; in a terminal t
 
 <h2 id="usage">4. How to use it</h2>
 <ol>
-  <li>Open <strong>Neon Verbale</strong> from the desktop or the Start/applications menu.</li>
+  <li>Open <strong>Neon Minutes</strong> from the desktop or the Start/applications menu.</li>
   <li>Choose the <strong>Meeting language</strong>: Italian, English, Spanish, French, Portuguese, Chinese,
     or <em>Detect automatically</em> when you do not know it or it changes from meeting to meeting.</li>
   <li>Click <strong>Add videos…</strong> and pick one or more recordings (you can select several at once
@@ -277,8 +282,8 @@ download are added.</p>
 <h2 id="data">10. Where the data is</h2>
 <table>
   <tr><th>What</th><th>Where</th></tr>
-  <tr><td>Program</td><td>Windows: <code>%LOCALAPPDATA%\Programs\Neon Verbale</code><br>Linux: <code>~/.local/lib/neon-verbale</code></td></tr>
-  <tr><td>Voice library, glossary, timings, error log</td><td>Windows: <code>%LOCALAPPDATA%\Neon Verbale</code><br>Linux: <code>~/.local/share/neon-verbale</code></td></tr>
+  <tr><td>Program</td><td>Windows: <code>%LOCALAPPDATA%\Programs\Neon Minutes</code><br>Linux: <code>~/.local/lib/neon-minutes</code></td></tr>
+  <tr><td>Voice library, glossary, timings, error log</td><td>Windows: <code>%LOCALAPPDATA%\Neon Minutes</code><br>Linux: <code>~/.local/share/neon-minutes</code></td></tr>
   <tr><td>Downloaded Whisper models</td><td>the <code>modelli</code> subfolder of the data folder</td></tr>
   <tr><td>Transcripts</td><td><code>Trascrizioni</code> folder next to each video</td></tr>
 </table>
@@ -292,8 +297,8 @@ people concerned.</p>
 
 <h2 id="troubleshooting">12. Troubleshooting</h2>
 <h3>Installing the components fails</h3>
-<p>Check the connection and retry from <strong>Start → Neon Verbale → Ripara componenti</strong> (on Linux:
-<code>neon-verbale --ripara</code>). The error details are in <code>install.log</code>, in the program
+<p>Check the connection and retry from <strong>Start → Neon Minutes → Ripara componenti</strong> (on Linux:
+<code>neon-minutes --ripara</code>). The error details are in <code>install.log</code>, in the program
 folder. Behind an authenticated corporate proxy, ask IT to allow <code>pypi.org</code>,
 <code>files.pythonhosted.org</code>, <code>download.pytorch.org</code> and <code>huggingface.co</code>.</p>
 <h3>I have an NVIDIA GPU but the program uses the CPU</h3>
@@ -315,10 +320,10 @@ driver from <a href="https://www.nvidia.com/drivers">nvidia.com/drivers</a>, the
 
 <h2 id="command-line">13. Command line (for power users)</h2>
 <p>On Windows, from a PowerShell terminal in the program folder:</p>
-<pre>cd "$env:LOCALAPPDATA\Programs\Neon Verbale"
+<pre>cd "$env:LOCALAPPDATA\Programs\Neon Minutes"
 .\runtime\python.exe -m meeting_transcriber "C:\path\meeting.mp4"
 .\runtime\python.exe -m meeting_transcriber --help</pre>
-<p>On Linux: <code>neon-verbale --trascrivi meeting.mp4</code> (and <code>neon-verbale --trascrivi --help</code>).</p>
+<p>On Linux: <code>neon-minutes --trascrivi meeting.mp4</code> (and <code>neon-minutes --trascrivi --help</code>).</p>
 <table>
   <tr><th>Option</th><th>What it does</th></tr>
   <tr><td><code>--num-speakers N</code></td><td>exact number of participants (also <code>--min-speakers</code>, <code>--max-speakers</code>)</td></tr>
@@ -330,14 +335,14 @@ driver from <a href="https://www.nvidia.com/drivers">nvidia.com/drivers</a>, the
 </table>
 
 <h2 id="uninstall">14. Uninstalling</h2>
-<p>On Windows: <strong>Settings → Apps → Installed apps → Neon Verbale → Uninstall</strong>, or
-<strong>Start → Neon Verbale → Disinstalla</strong>. You are asked whether to delete the downloaded models and
+<p>On Windows: <strong>Settings → Apps → Installed apps → Neon Minutes → Uninstall</strong>, or
+<strong>Start → Neon Minutes → Disinstalla</strong>. You are asked whether to delete the downloaded models and
 the voice library too; the transcripts next to the videos stay where they are.</p>
-<p>On Linux: <code>neon-verbale --disinstalla</code>, or right click on the icon in the applications menu →
-<em>Disinstalla Neon Verbale</em>. Here too you are asked whether to delete models and voice library.</p>
+<p>On Linux: <code>neon-minutes --disinstalla</code>, or right click on the icon in the applications menu →
+<em>Disinstalla Neon Minutes</em>. Here too you are asked whether to delete models and voice library.</p>
 
 <h2 id="licenses">15. Licences</h2>
-<p>Neon Verbale is free software under the <strong>MIT No Attribution</strong> licence (MIT-0): you can use,
+<p>Neon Minutes is free software under the <strong>MIT No Attribution</strong> licence (MIT-0): you can use,
 copy, modify and redistribute it for any purpose, commercial included, with no obligations. Full text in
 <code>LICENSE.txt</code>, in the program folder.</p>
 <p>It relies on third-party open-source components, each with its own licence: Python (PSF), PyTorch (BSD),
@@ -347,7 +352,7 @@ speaker-diarization-community-1 model (CC BY 4.0, © pyannoteAI, included unmodi
 <code>THIRD-PARTY-NOTICES.txt</code>.</p>
 </main>
 <footer>
-  <div class="wrap">Neon Verbale 1.4.0 · MIT-0 licence · <a href="https://github.com/battles5/neon-verbale">github.com/battles5/neon-verbale</a></div>
+  <div class="wrap">Neon Minutes 1.5.0 · MIT-0 licence · <a href="https://github.com/battles5/neon-minutes">github.com/battles5/neon-minutes</a></div>
 </footer>
 </body>
 </html>

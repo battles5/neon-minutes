@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.5.0 — 2026-11-05
+
+- **New name: NEON MINUTES** (formerly *Neon Verbale*), now that everything is in English. New
+  banner, tagline *names in lights*, and a "Why neon?" section in the README and the guide. The
+  repository is now `battles5/neon-minutes`; GitHub redirects the old links.
+- **Upgrade without downloads**: the Windows setup moves the installed *Neon Verbale* (or
+  *Trascrittore riunioni*) folder to *Neon Minutes*, replaces the old shortcuts and keeps an icon
+  pinned to the taskbar working; voices, glossary, timings and models move to the new data folder.
+  On Linux the `.run` file moves `~/.local/lib/neon-verbale`, replaces the `neon-verbale` command
+  with `neon-minutes` and the data folder follows.
+- The Linux build on GitHub Actions now also tests the upgrade from Neon Verbale 1.4.0.
+
 ## 1.4.0 — 2026-11-05
 
 - **Window in six languages**: English, Italian, Spanish, French, Portuguese and Chinese, chosen
