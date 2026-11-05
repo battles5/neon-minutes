@@ -1,6 +1,6 @@
 """Local meeting transcription: faster-whisper + pyannote + speaker names read from Teams video."""
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 
 # Importing paths sets HF_HOME for an installed copy before any module loads huggingface_hub,
 # so models always land in the user's data folder, whichever module is imported first.

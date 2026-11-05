@@ -1,5 +1,15 @@
 # Modifiche
 
+## 1.2.0 — 05/11/2026
+
+- **Nuovo nome: NEON VERBALE** (prima *Trascrittore riunioni*), con icona synthwave (piuma al
+  neon su un sole a strisce), banner e immagini del wizard di installazione nello stesso stile.
+  Il repository è ora `battles5/neon-verbale`; i vecchi link vengono reindirizzati da GitHub.
+- **Aggiornamento senza perdite:** il setup si installa sopra *Trascrittore riunioni* (stesso
+  identificativo), toglie i vecchi collegamenti dal menu Start e dal desktop e, al primo avvio,
+  sposta la cartella dati (voci, glossario, tempi, modelli) sotto il nuovo nome.
+- Guida con i colori del nuovo stile.
+
 ## 1.1.0 — 05/11/2026
 
 - **Coda di registrazioni.** "Aggiungi video…" resta attivo anche durante un'elaborazione e i

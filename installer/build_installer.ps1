@@ -1,4 +1,4 @@
-# Builds dist\TrascrittoreRiunioni-Setup-<version>.exe
+# Builds dist\NeonVerbale-Setup-<version>.exe
 #
 #   powershell -ExecutionPolicy Bypass -File installer\build_installer.ps1
 #
@@ -29,7 +29,7 @@ function Copy-Utf8Bom($src, $dest) {
 }
 
 $version = (& $py -c "import sys; sys.path.insert(0, r'$root'); import meeting_transcriber; print(meeting_transcriber.__version__)").Trim()
-Step "Trascrittore riunioni $version"
+Step "Neon Verbale $version"
 
 Step "Cartella di staging"
 if (Test-Path $stage) { Remove-Item -Recurse -Force $stage }
@@ -51,7 +51,7 @@ Rename-Item (Join-Path $stage "python") "runtime"
 Step "Programma, documentazione, licenze"
 New-Item -ItemType Directory -Force "$stage\meeting_transcriber", "$stage\assets", "$stage\docs", "$stage\installer" | Out-Null
 Copy-Item "$root\meeting_transcriber\*.py" "$stage\meeting_transcriber"
-Copy-Item "$root\assets\piuma.ico", "$root\assets\piuma.png" "$stage\assets"
+Copy-Item "$root\assets\piuma.ico", "$root\assets\piuma.png", "$root\assets\wizard_side.bmp", "$root\assets\wizard_small.bmp", "$root\assets\banner.png" "$stage\assets"
 Copy-Item "$root\docs\*" "$stage\docs" -Recurse
 Copy-Item "$root\installer\postinstall.py" "$stage\installer"
 Copy-Utf8Bom "$root\LICENSE.txt" "$stage\LICENSE.txt"
@@ -77,5 +77,5 @@ Copy-Utf8Bom "$PSScriptRoot\requisiti.txt" "$build\requisiti.txt"
 & $iscc "/DAppVersion=$version" "/DStage=$stage" @sizeDefines "/O$dist" "$build\setup.iss"
 if ($LASTEXITCODE) { throw "ISCC non riuscito" }
 
-$exe = Get-Item (Join-Path $dist "TrascrittoreRiunioni-Setup-$version.exe")
+$exe = Get-Item (Join-Path $dist "NeonVerbale-Setup-$version.exe")
 Step ("Fatto: {0} ({1:N0} MB)" -f $exe.FullName, ($exe.Length / 1MB))

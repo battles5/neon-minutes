@@ -279,7 +279,7 @@ def main() -> int:
         seconds = sizes["install_seconds"]
         model = "large-v3" if variant == "cuda" else "large-v3-turbo"
         torch_version = (installer / "torch-version.txt").read_text(encoding="utf-8").strip()
-        log(f"Trascrittore riunioni {version}: installazione dei componenti")
+        log(f"Neon Verbale {version}: installazione dei componenti")
         log(f"Modalità: {'GPU NVIDIA' if variant == 'cuda' else 'CPU'} ({reason})")
 
         steps = [
@@ -313,7 +313,7 @@ def main() -> int:
         if args.models:
             progress.start(index)
             # install.json now exists, so meeting_transcriber.paths points HF_HOME at the data folder.
-            data = Path(os.environ.get("LOCALAPPDATA", Path.home())) / "Trascrittore riunioni" / "modelli"
+            data = Path(os.environ.get("LOCALAPPDATA", Path.home())) / "Neon Verbale" / "modelli"
             watch = data / "hub" / ("models--" + WHISPER_REPOS[model].replace("/", "--"))
             # Plain HTTP instead of the Xet backend: it writes the file as it arrives, so its
             # growth is the download progress (Xet assembles the file only at the end).
@@ -338,7 +338,7 @@ def main() -> int:
         if variant == "cuda" and "CPU" in description:
             log("ATTENZIONE: la GPU non risulta utilizzabile, il programma userà la CPU.")
             print("@@W|La GPU non risulta utilizzabile: il programma userà la CPU. Aggiorna il driver "
-                  "NVIDIA e poi usa Start > Trascrittore riunioni > Ripara componenti.", flush=True)
+                  "NVIDIA e poi usa Start > Neon Verbale > Ripara componenti.", flush=True)
         log("Installazione completata.")
         if not args.wizard:
             print("\n\nInstallazione completata.")

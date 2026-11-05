@@ -1,7 +1,7 @@
-AVVISI DI TERZE PARTI — Trascrittore riunioni
-==============================================
+AVVISI DI TERZE PARTI — Neon Verbale
+=====================================
 
-Il codice di Trascrittore riunioni è distribuito con licenza MIT No Attribution
+Il codice di Neon Verbale è distribuito con licenza MIT No Attribution
 (vedi LICENSE.txt). Il programma si appoggia a componenti di terze parti, ciascuno
 con la propria licenza, elencati qui sotto.
 

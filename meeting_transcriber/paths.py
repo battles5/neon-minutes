@@ -3,18 +3,27 @@
 Development checkout: everything next to the code. Installed copy (the installer writes
 install.json next to the package): code in the install folder, per-user data (voice
 library, ETA timings, glossary, settings, downloaded models) in
-%LOCALAPPDATA%\\Trascrittore riunioni, which updates and uninstalls leave alone.
+%LOCALAPPDATA%\\Neon Verbale, which updates and uninstalls leave alone.
 """
 
 import os
 import shutil
 from pathlib import Path
 
-APP_NAME = "Trascrittore riunioni"
+APP_NAME = "Neon Verbale"
+OLD_APP_NAME = "Trascrittore riunioni"  # name up to 1.1.0
 APP_DIR = Path(__file__).resolve().parent.parent
 INSTALL_INFO = APP_DIR / "install.json"
 INSTALLED = INSTALL_INFO.exists()
-DATA_DIR = Path(os.environ.get("LOCALAPPDATA", Path.home())) / APP_NAME if INSTALLED else APP_DIR
+_USER_DATA = Path(os.environ.get("LOCALAPPDATA", Path.home()))
+DATA_DIR = _USER_DATA / APP_NAME if INSTALLED else APP_DIR
+
+if INSTALLED and not DATA_DIR.exists() and (_USER_DATA / OLD_APP_NAME).is_dir():
+    # First start after the rename: keep voices, glossary, timings and downloaded models.
+    try:
+        (_USER_DATA / OLD_APP_NAME).rename(DATA_DIR)
+    except OSError:
+        pass
 MODELS_DIR = DATA_DIR / "modelli"
 BUNDLED_PYANNOTE = APP_DIR / "models" / "pyannote-community-1"
 GUIDE = APP_DIR / "docs" / "Guida.html"

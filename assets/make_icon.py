@@ -1,72 +1,104 @@
-"""Draw the quill-pen icon of the desktop shortcut: python assets/make_icon.py"""
+"""Draw the Neon Verbale icon: a neon quill over a striped synthwave sun.
+
+    python assets/make_icon.py   -> assets/piuma.ico (all sizes) and assets/piuma.png
+"""
 
 import math
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFilter
+from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 S = 1024  # supersampled canvas; downscaled for every icon size
 OUT = Path(__file__).with_name("piuma.ico")
 
-NIB = (0.08 * S, 0.94 * S)  # writing tip, bottom left
-TIP = (0.93 * S, 0.05 * S)  # top of the feather
-VANE_START = 0.30  # fraction of the axis where the vane begins
-INDIGO, LIGHT, SHAFT, INK = (79, 70, 229), (165, 180, 252), (238, 242, 255), (30, 27, 75)
+NIGHT_TOP, NIGHT_BOTTOM = (20, 6, 48), (58, 12, 92)
+SUN_TOP, SUN_BOTTOM = (255, 214, 64), (255, 41, 117)
+NEON, NEON_CORE = (45, 226, 230), (220, 255, 255)
+NIB = (0.15 * S, 0.88 * S)
+TIP = (0.88 * S, 0.12 * S)
 
 
-def axis_point(t: float, offset: float = 0.0) -> tuple[float, float]:
-    """Point at fraction t along nib->tip, shifted `offset` px to the left of the axis."""
+def vertical_gradient(size, top, bottom) -> Image.Image:
+    w, h = size
+    column = Image.new("RGB", (1, h))
+    for y in range(h):
+        t = y / max(h - 1, 1)
+        column.putpixel((0, y), tuple(int(a + (b - a) * t) for a, b in zip(top, bottom)))
+    return column.resize((w, h))
+
+
+def rounded_mask(radius: float) -> Image.Image:
+    mask = Image.new("L", (S, S), 0)
+    ImageDraw.Draw(mask).rounded_rectangle([0, 0, S - 1, S - 1], radius=radius, fill=255)
+    return mask
+
+
+def sun() -> tuple[Image.Image, Image.Image]:
+    """The sun and its alpha: a gradient disc with the classic gaps in the lower half."""
+    cx, cy, r = S * 0.5, S * 0.56, S * 0.33
+    mask = Image.new("L", (S, S), 0)
+    d = ImageDraw.Draw(mask)
+    d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=255)
+    y, gap, band = cy + r * 0.05, S * 0.012, S * 0.055
+    while y < cy + r:
+        d.rectangle([0, y, S, y + gap], fill=0)
+        gap *= 1.35
+        y += band
+        band *= 0.85
+    return vertical_gradient((S, S), SUN_TOP, SUN_BOTTOM), mask
+
+
+def axis_point(t: float, offset: float = 0.0):
     dx, dy = TIP[0] - NIB[0], TIP[1] - NIB[1]
     length = math.hypot(dx, dy)
     ux, uy = dx / length, dy / length
     return NIB[0] + dx * t - uy * offset, NIB[1] + dy * t + ux * offset
 
 
-def half_width(t: float, side: int) -> float:
-    """Vane outline: swells after the start, tapers to the tip; the left side is wider."""
-    u = (t - VANE_START) / (1 - VANE_START)
-    if u <= 0:
-        return 0.0
-    base = math.sin(math.pi * min(u, 1.0) ** 0.75) ** 0.9
-    return base * S * (0.17 if side > 0 else 0.11)
+def quill_mask() -> Image.Image:
+    """Feather outline, shaft and nib as one shape, to be drawn in neon."""
+    m = Image.new("L", (S, S), 0)
+    d = ImageDraw.Draw(m)
+    steps = [0.3 + 0.7 * i / 120 for i in range(121)]
+
+    def half(t, side):
+        u = (t - 0.3) / 0.7
+        return math.sin(math.pi * min(max(u, 0), 1) ** 0.75) ** 0.9 * S * (0.15 if side > 0 else 0.10)
+
+    outline = [axis_point(t, half(t, +1)) for t in steps] + [axis_point(t, -half(t, -1)) for t in reversed(steps)]
+    d.line(outline + [outline[0]], fill=255, width=int(S * 0.028), joint="curve")
+    for i in range(1, 9):  # barbs
+        t = 0.3 + 0.7 * i / 9
+        for side in (+1, -1):
+            d.line([axis_point(t), axis_point(min(t + 0.06, 0.98), side * half(t + 0.04, side) * 0.85)],
+                   fill=255, width=int(S * 0.016))
+    d.line([axis_point(0.12), axis_point(0.97)], fill=255, width=int(S * 0.03))
+    d.polygon([axis_point(0.0), axis_point(0.13, S * 0.04), axis_point(0.16), axis_point(0.13, -S * 0.04)], fill=255)
+    return m
 
 
 def draw() -> Image.Image:
-    img = Image.new("RGBA", (S, S), (0, 0, 0, 0))
-    d = ImageDraw.Draw(img)
-    steps = [VANE_START + (1 - VANE_START) * i / 120 for i in range(121)]
-    left = [axis_point(t, half_width(t, +1)) for t in steps]
-    right = [axis_point(t, -half_width(t, -1)) for t in reversed(steps)]
-    d.polygon(left + right, fill=INDIGO)
+    img = vertical_gradient((S, S), NIGHT_TOP, NIGHT_BOTTOM).convert("RGBA")
+    sun_img, sun_alpha = sun()
+    img.paste(sun_img, (0, 0), sun_alpha)
 
-    # Barbs: light strokes slanting from the shaft towards the tip.
-    for i in range(1, 15):
-        t = VANE_START + (1 - VANE_START) * i / 15
-        for side in (+1, -1):
-            w = half_width(t + 0.05, side) * 0.92
-            end = axis_point(min(t + 0.07, 0.99), side * w)
-            d.line([axis_point(t), end], fill=LIGHT, width=int(S * 0.012))
+    quill = quill_mask()
+    glow = quill.filter(ImageFilter.GaussianBlur(S * 0.03))
+    glow = ImageChops.multiply(glow, Image.new("L", (S, S), 230))
+    img.paste(Image.new("RGB", (S, S), NEON), (0, 0), glow)  # outer glow
+    img.paste(Image.new("RGB", (S, S), NEON), (0, 0), quill)
+    core = quill.filter(ImageFilter.MinFilter(9))  # bright centre of the tube
+    img.paste(Image.new("RGB", (S, S), NEON_CORE), (0, 0), core)
 
-    # Notches that make it read as a feather, not a leaf.
-    for t, side in ((0.52, +1), (0.70, -1), (0.80, +1)):
-        a = axis_point(t, side * half_width(t, side) * 1.05)
-        b = axis_point(t - 0.06, side * half_width(t - 0.06, side) * 0.35)
-        d.line([a, b], fill=(0, 0, 0, 0), width=int(S * 0.02))
-
-    d.line([axis_point(0.10), axis_point(0.985)], fill=SHAFT, width=int(S * 0.022))
-
-    # Metal nib with its slit.
-    nib = [axis_point(0.0), axis_point(0.14, S * 0.035), axis_point(0.17), axis_point(0.14, -S * 0.035)]
-    d.polygon(nib, fill=INK)
-    d.line([axis_point(0.0), axis_point(0.11)], fill=LIGHT, width=int(S * 0.008))
+    img.putalpha(rounded_mask(S * 0.2))
     return img
 
 
 def main():
-    big = draw().filter(ImageFilter.SMOOTH)
-    sizes = [16, 24, 32, 48, 64, 128, 256]
-    big.resize((256, 256), Image.LANCZOS).save(OUT, sizes=[(s, s) for s in sizes])
-    big.resize((256, 256), Image.LANCZOS).save(OUT.with_suffix(".png"))
+    big = draw()
+    icon = big.resize((256, 256), Image.LANCZOS)
+    icon.save(OUT, sizes=[(s, s) for s in (16, 24, 32, 48, 64, 128, 256)])
+    icon.save(OUT.with_suffix(".png"))
     print(OUT)
 
 

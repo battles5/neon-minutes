@@ -145,7 +145,7 @@ class App:
         # sequence (two threads loading the CUDA libraries at once can deadlock).
         self.prep = ThreadPoolExecutor(max_workers=1)
 
-        root.title("Trascrittore riunioni")
+        root.title("Neon Verbale")
         root.geometry("920x640")
         root.minsize(700, 460)
         root.protocol("WM_DELETE_WINDOW", self.on_close)
@@ -380,7 +380,7 @@ class App:
             if kind in ("done", "error") and not self.busy():
                 self.auto = False
                 if self.batch_errors:
-                    messagebox.showwarning("Trascrittore", f"{self.batch_errors} file non completati: vedi il log.")
+                    messagebox.showwarning("Neon Verbale", f"{self.batch_errors} file non completati: vedi il log.")
                 self.batch_errors = 0
         self.refresh()
         self.root.after(TICK_MS, self.tick)
@@ -462,10 +462,10 @@ class App:
         if path.exists():
             open_path(path)
         else:
-            messagebox.showinfo("Trascrittore", f"File non trovato:\n{path}")
+            messagebox.showinfo("Neon Verbale", f"File non trovato:\n{path}")
 
     def on_close(self):
-        if self.busy() and not messagebox.askyesno("Trascrittore", "Trascrizioni in corso o in coda: vuoi interromperle?"):
+        if self.busy() and not messagebox.askyesno("Neon Verbale", "Trascrizioni in corso o in coda: vuoi interromperle?"):
             return
         self.root.destroy()
         os._exit(0)  # the worker thread may be inside a GPU call

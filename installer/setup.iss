@@ -1,4 +1,4 @@
-; Setup wizard of Trascrittore riunioni. Built by installer\build_installer.ps1, which passes:
+; Setup wizard of Neon Verbale. Built by installer\build_installer.ps1, which passes:
 ;   /DAppVersion=x.y.z  /DStage=<staging folder>  /O<output folder>
 ;   and the download/disk sizes measured at build time (MB): DlTorchCuda, DlTorchCpu, DlDeps,
 ;   DlModelCuda, DlModelCpu, InstCuda, InstCpu
@@ -21,7 +21,7 @@
   #define InstCuda "5500"
   #define InstCpu "1300"
 #endif
-#define AppName "Trascrittore riunioni"
+#define AppName "Neon Verbale"
 #define AppExe "{app}\runtime\pythonw.exe"
 #define AppArgs "-m meeting_transcriber.gui"
 
@@ -31,7 +31,7 @@ AppName={#AppName}
 AppVersion={#AppVersion}
 AppVerName={#AppName} {#AppVersion}
 AppPublisher=Orso Peruzzi
-AppPublisherURL=https://github.com/battles5/trascrittore-riunioni
+AppPublisherURL=https://github.com/battles5/neon-verbale
 AppComments=Trascrizione locale delle riunioni con i nomi di chi parla
 DefaultDirName={localappdata}\Programs\{#AppName}
 DefaultGroupName={#AppName}
@@ -43,12 +43,14 @@ MinVersion=10.0
 LicenseFile={#Stage}\LICENSE.txt
 InfoBeforeFile=requisiti.txt
 SetupIconFile={#Stage}\assets\piuma.ico
+WizardImageFile={#Stage}\assets\wizard_side.bmp
+WizardSmallImageFile={#Stage}\assets\wizard_small.bmp
 UninstallDisplayIcon={app}\assets\piuma.ico
 UninstallDisplayName={#AppName}
 WizardStyle=modern
 Compression=lzma2/max
 SolidCompression=yes
-OutputBaseFilename=TrascrittoreRiunioni-Setup-{#AppVersion}
+OutputBaseFilename=NeonVerbale-Setup-{#AppVersion}
 ; Only the setup's own files; downloads and their space are checked on the hardware page.
 ExtraDiskSpaceRequired=0
 CloseApplications=yes
@@ -69,6 +71,12 @@ Name: "{autoprograms}\{#AppName}\Guida"; Filename: "{app}\docs\Guida.html"
 Name: "{autoprograms}\{#AppName}\Ripara componenti"; Filename: "{app}\runtime\python.exe"; Parameters: "-u ""{app}\installer\postinstall.py"" --app ""{app}"" --variant auto --models"; WorkingDir: "{app}"; IconFilename: "{app}\assets\piuma.ico"; Comment: "Reinstalla PyTorch e le librerie (per esempio dopo aver cambiato scheda video o driver)"
 Name: "{autoprograms}\{#AppName}\Disinstalla"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#AppName}"; Filename: "{#AppExe}"; Parameters: "{#AppArgs}"; WorkingDir: "{app}"; IconFilename: "{app}\assets\piuma.ico"; Tasks: desktopicon
+
+[InstallDelete]
+; Up to 1.1.0 the program was called "Trascrittore riunioni" (same AppId, so this is an upgrade):
+; drop the shortcuts with the old name, the new ones are created below.
+Type: filesandordirs; Name: "{autoprograms}\Trascrittore riunioni"
+Type: files; Name: "{autodesktop}\Trascrittore riunioni.lnk"
 
 [Run]
 Filename: "{#AppExe}"; Parameters: "{#AppArgs}"; WorkingDir: "{app}"; Description: "Avvia {#AppName}"; Flags: postinstall nowait skipifsilent; Check: ComponentsReady
@@ -335,7 +343,7 @@ begin
   end;
   if not PostInstallOk then
     SuppressibleMsgBox('Il programma è installato ma non ancora pronto. Quando la connessione funziona, apri' + #13#10 +
-      'Start > Trascrittore riunioni > Ripara componenti.', mbInformation, MB_OK, IDOK)
+      'Start > Neon Verbale > Ripara componenti.', mbInformation, MB_OK, IDOK)
   else if GpuWarning <> '' then
     SuppressibleMsgBox(GpuWarning, mbInformation, MB_OK, IDOK);
 end;
@@ -351,6 +359,9 @@ var
 begin
   if CurUninstallStep <> usPostUninstall then Exit;
   DataDir := ExpandConstant('{localappdata}\{#AppName}');
+  { Not migrated yet if the program was never started after the upgrade from 1.1.0. }
+  if not DirExists(DataDir) then
+    DataDir := ExpandConstant('{localappdata}\Trascrittore riunioni');
   if DirExists(DataDir) and (SuppressibleMsgBox(
       'Eliminare anche i dati personali del programma?' + #13#10#13#10 +
       '- modelli Whisper scaricati (fino a 3 GB)' + #13#10 +

@@ -1,12 +1,13 @@
 <p align="center">
-  <img src="assets/piuma.png" width="96" alt="">
+  <img src="assets/banner.png" alt="NEON VERBALE — verbali al neon">
 </p>
 
-<h1 align="center">Trascrittore riunioni</h1>
+<h1 align="center"><img src="assets/piuma.png" width="40" alt=""> NEON VERBALE</h1>
 
 <p align="center">
-  Trascrizione delle riunioni con i nomi di chi parla, tutta sul tuo PC.<br>
-  <a href="https://github.com/battles5/trascrittore-riunioni/releases/latest"><strong>Scarica il setup per Windows</strong></a>
+  <em>ｖｅｒｂａｌｉ　ａｌ　ｎｅｏｎ</em> — trascrizione delle riunioni con i nomi di chi parla, tutta sul tuo PC.<br>
+  <sub>Fino alla versione 1.1.0 si chiamava <em>Trascrittore riunioni</em>.</sub><br>
+  <a href="https://github.com/battles5/neon-verbale/releases/latest"><strong>Scarica il setup per Windows</strong></a>
   ·
   <a href="docs/Guida.html">Guida completa</a>
   ·
@@ -16,10 +17,10 @@
 </p>
 
 <p align="center">
-  <img alt="Licenza MIT-0" src="https://img.shields.io/badge/licenza-MIT--0-blue">
-  <img alt="Windows 10/11" src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6">
-  <img alt="Python 3.12" src="https://img.shields.io/badge/Python-3.12-3776AB">
-  <img alt="Offline" src="https://img.shields.io/badge/elaborazione-100%25%20locale-2ea44f">
+  <img alt="Licenza MIT-0" src="https://img.shields.io/badge/licenza-MIT--0-ff2975">
+  <img alt="Windows 10/11" src="https://img.shields.io/badge/Windows-10%20%7C%2011-2de2e6">
+  <img alt="Python 3.12" src="https://img.shields.io/badge/Python-3.12-ffd640">
+  <img alt="Offline" src="https://img.shields.io/badge/elaborazione-100%25%20locale-b026ff">
 </p>
 
 ---
@@ -85,8 +86,8 @@ A ogni avvio il programma sceglie GPU o CPU.
 
 ## Installazione
 
-1. Scarica `TrascrittoreRiunioni-Setup-<versione>.exe` dalle
-   [Release](https://github.com/battles5/trascrittore-riunioni/releases/latest).
+1. Scarica `NeonVerbale-Setup-<versione>.exe` dalle
+   [Release](https://github.com/battles5/neon-verbale/releases/latest).
 2. Avvialo. Il setup non è firmato digitalmente: se Windows mostra "PC protetto da Windows",
    scegli *Ulteriori informazioni* → *Esegui comunque*.
 3. Segui il wizard. La pagina **Verifica dell'hardware e spazio necessario** dice cosa ha
@@ -95,13 +96,17 @@ A ogni avvio il programma sceglie GPU o CPU.
    velocità e il tempo rimanente. Con la GPU ci vogliono circa 15-30 minuti, secondo la
    connessione (13 minuti misurati su una linea veloce); con la CPU circa 10-15 minuti.
 
-L'installazione è per il solo utente, in `%LOCALAPPDATA%\Programs\Trascrittore riunioni`, con il
-collegamento sul desktop (la piuma) e la voce nel menu Start, che comprende la guida e
+L'installazione è per il solo utente, in `%LOCALAPPDATA%\Programs\Neon Verbale`, con il
+collegamento sul desktop (la piuma al neon) e la voce nel menu Start, che comprende la guida e
 *Ripara componenti*.
+
+**Aggiornare da *Trascrittore riunioni* (1.1.0 o precedenti):** basta avviare il nuovo setup. Si
+installa sopra la versione esistente, nella stessa cartella, sostituisce i collegamenti con
+quelli nuovi e, al primo avvio, sposta voci, glossario e modelli scaricati sotto il nuovo nome.
 
 ## Uso
 
-1. Apri **Trascrittore riunioni**.
+1. Apri **Neon Verbale**.
 2. **Aggiungi video…** e seleziona una o più registrazioni (mp4, mkv, mov, avi, webm, oppure
    solo audio: m4a, mp3, wav, ogg). Puoi aggiungerne altre in qualunque momento.
 3. **Avvia tutti**, oppure **▶** sulla riga di un singolo video. **✕** toglie un video dalla
@@ -183,9 +188,9 @@ durata dell'audio e la separazione delle voci circa 0,65 volte.
 
 | Cosa | Dove |
 |---|---|
-| Programma | `%LOCALAPPDATA%\Programs\Trascrittore riunioni` |
-| Libreria voci, glossario, tempi, log | `%LOCALAPPDATA%\Trascrittore riunioni` |
-| Modelli Whisper scaricati | `%LOCALAPPDATA%\Trascrittore riunioni\modelli` |
+| Programma | `%LOCALAPPDATA%\Programs\Neon Verbale` |
+| Libreria voci, glossario, tempi, log | `%LOCALAPPDATA%\Neon Verbale` |
+| Modelli Whisper scaricati | `%LOCALAPPDATA%\Neon Verbale\modelli` |
 | Trascrizioni | cartella `Trascrizioni` accanto a ogni video |
 
 Il programma si collega a Internet solo per scaricare i componenti. Alla disinstallazione puoi
@@ -222,7 +227,7 @@ Lo script:
 2. lo isola con un file `._pth`, così un Python già presente sul PC dell'utente non interferisce;
 3. copia il programma, la guida e il modello pyannote;
 4. fissa le versioni esatte delle dipendenze dal `.venv` (`requirements-lock.txt`);
-5. genera gli avvisi di terze parti e compila `dist\TrascrittoreRiunioni-Setup-<versione>.exe`.
+5. genera gli avvisi di terze parti e compila `dist\NeonVerbale-Setup-<versione>.exe`.
 
 PyTorch, nella versione CUDA o CPU, e Whisper vengono scaricati sul PC dell'utente durante
 l'installazione, da `installer\postinstall.py`.
@@ -272,13 +277,13 @@ e installato con il programma.
 Ideato da **Orso Peruzzi** ([@battles5](https://github.com/battles5)) e sviluppato insieme a
 **Claude** (Anthropic), che ha contribuito a progettazione, codice, installer e documentazione.
 
-Segnalazioni e proposte sono benvenute nelle [issue](https://github.com/battles5/trascrittore-riunioni/issues).
+Segnalazioni e proposte sono benvenute nelle [issue](https://github.com/battles5/neon-verbale/issues).
 
 ---
 
 ## In English
 
-**Trascrittore riunioni** ("meeting transcriber") turns a meeting recording into a transcript split
+**Neon Verbale** ("neon minutes", formerly *Trascrittore riunioni*) turns a meeting recording into a transcript split
 by speaker, with real names when the video is a Microsoft Teams recording. Teams highlights the
 active speaker's name in purple; the app reads those labels with OCR and matches them to the voice
 clusters found by pyannote. Everything runs locally: faster-whisper (large-v3 on NVIDIA GPUs,

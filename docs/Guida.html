@@ -3,23 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Guida di Trascrittore riunioni</title>
+<title>Guida di Neon Verbale</title>
 <style>
   :root {
     --bg: #fbfbfd; --fg: #1d1d27; --muted: #5b5b6b; --line: #e3e3ec; --card: #ffffff;
-    --accent: #4f46e5; --accent-soft: #eef0ff; --warn: #9a5b00; --warn-soft: #fff6e5; --code: #f3f3f8;
+    --accent: #c0127e; --accent-soft: #fdeaf5; --warn: #9a5b00; --warn-soft: #fff6e5; --code: #f3f3f8;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #14141c; --fg: #e9e9f2; --muted: #a3a3b8; --line: #2b2b3a; --card: #1b1b26;
-      --accent: #a5b4fc; --accent-soft: #23234a; --warn: #f5c26b; --warn-soft: #33270f; --code: #22222f;
+      --bg: #120624; --fg: #ece6f7; --muted: #a99bc4; --line: #2e1c4a; --card: #1a0b33;
+      --accent: #2de2e6; --accent-soft: #261245; --warn: #f5c26b; --warn-soft: #33270f; --code: #22123d;
     }
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 "Segoe UI", system-ui, sans-serif; }
-  header { padding: 40px 16px 24px; border-bottom: 1px solid var(--line); }
-  header .wrap { display: flex; gap: 20px; align-items: center; }
-  header img { width: 64px; height: 64px; }
+  header { padding: 0 0 24px; border-bottom: 1px solid var(--line); }
+  header .banner { display: block; width: 100%; max-height: 320px; object-fit: cover; }
+  header .wrap { display: flex; gap: 20px; align-items: center; padding: 20px 16px 0; }
+  header .wrap img { width: 64px; height: 64px; }
   h1 { margin: 0; font-size: 30px; }
   header p { margin: 4px 0 0; color: var(--muted); }
   .wrap { max-width: 900px; margin: 0 auto; }
@@ -45,11 +46,13 @@
 </head>
 <body>
 <header>
+  <img class="banner" src="../assets/banner.png" alt="NEON VERBALE — verbali al neon">
   <div class="wrap">
     <img src="../assets/piuma.png" alt="">
     <div>
-      <h1>Trascrittore riunioni</h1>
-      <p>Trascrizione delle riunioni con i nomi di chi parla, tutta sul tuo PC.</p>
+      <h1>Neon Verbale</h1>
+      <p>Trascrizione delle riunioni con i nomi di chi parla, tutta sul tuo PC.
+        Fino alla versione 1.1.0 si chiamava <em>Trascrittore riunioni</em>.</p>
     </div>
   </div>
 </header>
@@ -106,7 +109,7 @@ il programma sceglie da solo GPU o CPU a ogni avvio.</div>
 
 <h2 id="installazione">3. Installazione</h2>
 <ol>
-  <li>Avvia <code>TrascrittoreRiunioni-Setup-&lt;versione&gt;.exe</code>.</li>
+  <li>Avvia <code>NeonVerbale-Setup-&lt;versione&gt;.exe</code>.</li>
   <li>Se compare <strong>"PC protetto da Windows"</strong>: il programma non è firmato digitalmente.
     Scegli <em>Ulteriori informazioni</em> e poi <em>Esegui comunque</em>.</li>
   <li>Segui le pagine del wizard: licenza, requisiti, cartella (va bene quella proposta), opzioni.
@@ -121,15 +124,18 @@ il programma sceglie da solo GPU o CPU a ogni avvio.</div>
     CPU circa 10-15 minuti. Nel frattempo puoi usare il PC.</li>
   <li>Alla fine puoi avviare subito il programma.</li>
 </ol>
-<p>Vengono creati il collegamento sul desktop (con la piuma) e la cartella <em>Trascrittore riunioni</em>
+<div class="note"><strong>Aggiornare da <em>Trascrittore riunioni</em></strong> (1.1.0 o precedenti): basta avviare il
+nuovo setup. Si installa sopra la versione esistente, nella stessa cartella, sostituisce i collegamenti con
+quelli nuovi e, al primo avvio, sposta voci, glossario e modelli scaricati sotto il nuovo nome.</div>
+<p>Vengono creati il collegamento sul desktop (con la piuma) e la cartella <em>Neon Verbale</em>
 nel menu Start, con il programma, questa guida, <em>Ripara componenti</em> e <em>Disinstalla</em>.</p>
 <div class="warn">Se l'installazione dei componenti non riesce (di solito per la connessione o per il
 proxy aziendale), il wizard propone di riprovare. Puoi anche riprovare più tardi da
-<strong>Start → Trascrittore riunioni → Ripara componenti</strong>.</div>
+<strong>Start → Neon Verbale → Ripara componenti</strong>.</div>
 
 <h2 id="uso">4. Come si usa</h2>
 <ol>
-  <li>Apri <strong>Trascrittore riunioni</strong> dal desktop o dal menu Start.</li>
+  <li>Apri <strong>Neon Verbale</strong> dal desktop o dal menu Start.</li>
   <li><strong>Aggiungi video…</strong> e seleziona una o più registrazioni (puoi selezionarne
     diverse insieme con <kbd>Ctrl</kbd> o <kbd>Maiusc</kbd>).</li>
   <li>Premi <strong>Avvia tutti</strong>, oppure <strong>▶</strong> sulla riga di un singolo video.</li>
@@ -225,9 +231,9 @@ alcuni minuti di download.</p>
 <h2 id="dati">10. Dove sono i dati</h2>
 <table>
   <tr><th>Cosa</th><th>Dove</th></tr>
-  <tr><td>Programma</td><td><code>%LOCALAPPDATA%\Programs\Trascrittore riunioni</code></td></tr>
-  <tr><td>Libreria delle voci, glossario, tempi, registro errori</td><td><code>%LOCALAPPDATA%\Trascrittore riunioni</code></td></tr>
-  <tr><td>Modelli Whisper scaricati</td><td><code>%LOCALAPPDATA%\Trascrittore riunioni\modelli</code></td></tr>
+  <tr><td>Programma</td><td><code>%LOCALAPPDATA%\Programs\Neon Verbale</code></td></tr>
+  <tr><td>Libreria delle voci, glossario, tempi, registro errori</td><td><code>%LOCALAPPDATA%\Neon Verbale</code></td></tr>
+  <tr><td>Modelli Whisper scaricati</td><td><code>%LOCALAPPDATA%\Neon Verbale\modelli</code></td></tr>
   <tr><td>Trascrizioni</td><td>cartella <code>Trascrizioni</code> accanto a ogni video</td></tr>
 </table>
 <p>Per aprire una di queste cartelle incolla il percorso nella barra degli indirizzi di Esplora file.</p>
@@ -240,7 +246,7 @@ senza il consenso delle persone interessate.</p>
 
 <h2 id="problemi">12. Risoluzione dei problemi</h2>
 <h3>L'installazione dei componenti non riesce</h3>
-<p>Controlla la connessione e riprova da <strong>Start → Trascrittore riunioni → Ripara componenti</strong>.
+<p>Controlla la connessione e riprova da <strong>Start → Neon Verbale → Ripara componenti</strong>.
 Il dettaglio dell'errore è in <code>install.log</code>, nella cartella del programma. Dietro un proxy
 aziendale con autenticazione, chiedi all'IT di consentire <code>pypi.org</code>,
 <code>files.pythonhosted.org</code>, <code>download.pytorch.org</code> e <code>huggingface.co</code>.</p>
@@ -260,12 +266,12 @@ la <a href="#riga-di-comando">riga di comando</a> puoi indicare il numero di par
 <p>Aggiungile al <a href="#glossario">glossario</a> e rielabora il video con la riga di comando e
 <code>--redo asr</code>.</p>
 <h3>Il programma non si apre</h3>
-<p>Guarda <code>gui.log</code> in <code>%LOCALAPPDATA%\Trascrittore riunioni</code> ed esegui
+<p>Guarda <code>gui.log</code> in <code>%LOCALAPPDATA%\Neon Verbale</code> ed esegui
 <strong>Ripara componenti</strong>.</p>
 
 <h2 id="riga-di-comando">13. Riga di comando (per utenti esperti)</h2>
 <p>Da un terminale PowerShell, nella cartella del programma:</p>
-<pre>cd "$env:LOCALAPPDATA\Programs\Trascrittore riunioni"
+<pre>cd "$env:LOCALAPPDATA\Programs\Neon Verbale"
 .\runtime\python.exe -m meeting_transcriber "C:\percorso\riunione.mp4"
 .\runtime\python.exe -m meeting_transcriber --help</pre>
 <table>
@@ -279,12 +285,12 @@ la <a href="#riga-di-comando">riga di comando</a> puoi indicare il numero di par
 </table>
 
 <h2 id="disinstallazione">14. Disinstallazione</h2>
-<p>Da <strong>Impostazioni → App → App installate → Trascrittore riunioni → Disinstalla</strong>, oppure
-da <strong>Start → Trascrittore riunioni → Disinstalla</strong>. Ti viene chiesto se eliminare anche
+<p>Da <strong>Impostazioni → App → App installate → Neon Verbale → Disinstalla</strong>, oppure
+da <strong>Start → Neon Verbale → Disinstalla</strong>. Ti viene chiesto se eliminare anche
 modelli scaricati e libreria delle voci; le trascrizioni accanto ai video restano dove sono.</p>
 
 <h2 id="licenze">15. Licenze</h2>
-<p>Trascrittore riunioni è software libero con licenza <strong>MIT No Attribution</strong> (MIT-0): puoi
+<p>Neon Verbale è software libero con licenza <strong>MIT No Attribution</strong> (MIT-0): puoi
 usarlo, copiarlo, modificarlo e ridistribuirlo per qualunque scopo, anche commerciale, senza obblighi.
 Testo completo in <code>LICENSE.txt</code>, nella cartella del programma.</p>
 <p>Si appoggia a componenti open source di terze parti, ciascuno con la propria licenza: Python (PSF),
@@ -294,7 +300,7 @@ modifiche), RapidOCR e OpenCV (Apache 2.0), PyAV con FFmpeg e molti altri. L'ele
 attribuzioni, è in <code>THIRD-PARTY-NOTICES.txt</code>.</p>
 </main>
 <footer>
-  <div class="wrap">Trascrittore riunioni 1.1.0 · licenza MIT-0</div>
+  <div class="wrap">Neon Verbale 1.2.0 · licenza MIT-0 · <a href="https://github.com/battles5/neon-verbale">github.com/battles5/neon-verbale</a></div>
 </footer>
 </body>
 </html>

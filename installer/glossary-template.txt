@@ -1,4 +1,4 @@
-# Glossario di Trascrittore riunioni
+# Glossario di Neon Verbale
 #
 # Scrivi qui, uno per riga, i termini che Whisper deve riconoscere e scrivere giusti:
 # nomi di progetti, sigle, prodotti, gergo tecnico. Le righe che iniziano con # sono
