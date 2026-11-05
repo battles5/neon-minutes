@@ -46,12 +46,12 @@ T = {
         "en": "Meeting language", "it": "Lingua della riunione", "es": "Idioma de la reunión",
         "fr": "Langue de la réunion", "pt": "Idioma da reunião", "zh": "会议语言"},
     "meeting_language_hint": {
-        "en": "for the videos you add next; each row can be changed until it starts",
-        "it": "per i video che aggiungi; su ogni riga si cambia finché non parte",
-        "es": "para los vídeos que añadas; en cada fila se cambia hasta que empiece",
-        "fr": "pour les vidéos ajoutées ensuite ; modifiable sur chaque ligne avant son lancement",
-        "pt": "para os vídeos que adicionar; em cada linha pode ser mudado até começar",
-        "zh": "用于之后添加的视频；每一行在开始前都可以单独修改"},
+        "en": "applies to every video not started yet; a single row can then be changed with its own menu",
+        "it": "vale per tutti i video non ancora avviati; poi si può cambiare una singola riga dal suo menu",
+        "es": "se aplica a todos los vídeos aún no iniciados; luego cada fila se puede cambiar con su menú",
+        "fr": "s'applique à toutes les vidéos pas encore lancées ; chaque ligne se modifie ensuite avec son menu",
+        "pt": "vale para todos os vídeos ainda não iniciados; depois cada linha pode ser mudada no seu menu",
+        "zh": "适用于所有尚未开始的视频；之后可用每一行自己的菜单单独修改"},
     "checking_hardware": {
         "en": "Checking the hardware{dots}", "it": "Verifica dell'hardware{dots}",
         "es": "Comprobando el hardware{dots}", "fr": "Vérification du matériel{dots}",
@@ -305,8 +305,8 @@ def set_ui_language(code: str):
 
 
 def meeting_language() -> str:
-    """Default language of new recordings: the saved choice, else the system's, else detection."""
-    code = _load().get("meeting_language") or system_language()
+    """Language of the meetings: the saved choice, automatic detection until one is made."""
+    code = _load().get("meeting_language")
     return code if code in MEETING_LANGUAGES else "auto"
 
 

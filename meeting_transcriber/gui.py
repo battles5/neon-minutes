@@ -242,12 +242,29 @@ class App:
         self.build_rows()
 
     def on_meeting_language(self, _event=None):
+        """The new language applies to the videos added next and to every video not started yet."""
         self.meeting_language = i18n.MEETING_LANGUAGES[self.meeting_box.current()]
         i18n.set_meeting_language(self.meeting_language)
+        with self.cond:
+            waiting = [j for j in self.jobs if not (j.taken or j.finished or j.error)]
+            for job in waiting:
+                job.language = self.meeting_language
+        for job in waiting:
+            row = self.rows.get(job.id)
+            if row:
+                row["language"].current(i18n.MEETING_LANGUAGES.index(job.language))
+            job.estimate = None  # a cached transcript counts only for the same language
+            self.prep.submit(self.estimate, job.id, job.path, job.language)
+        self.refresh()
 
     def on_row_language(self, job: Job, box: ttk.Combobox):
-        if not job.taken:
+        with self.cond:
+            if job.taken:
+                return
             job.language = i18n.MEETING_LANGUAGES[box.current()]
+        job.estimate = None
+        self.prep.submit(self.estimate, job.id, job.path, job.language)
+        self.refresh()
 
     # --- list of recordings ---------------------------------------------------------
 

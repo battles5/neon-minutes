@@ -152,8 +152,8 @@ NVIDIA GPU), `--no-models` (download Whisper at first use), `--no-desktop` (no d
 ## Usage
 
 1. Open **Neon Minutes**.
-2. Pick the **Meeting language** (Italian, English, Spanish, French, Portuguese, Chinese, or
-   *Detect automatically*). The **Interface** menu on the right changes the window's language.
+2. Pick the **Meeting language** (it starts as *Detect automatically*; or Italian, English, Spanish, French, Portuguese, Chinese;
+   it also changes the videos already in the list that have not started). The **Interface** menu on the right changes the window's language.
 3. Click **Add videos…** and pick one or more recordings (mp4, mkv, mov, avi, webm, or audio only:
    m4a, mp3, wav, ogg). You can add more at any time. Each row shows the video's language
    (IT, EN, ...), which you can change until it starts.

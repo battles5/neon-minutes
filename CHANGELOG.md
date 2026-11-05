@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.5.1 — 2026-11-05
+
+- **Meeting language menu**: choosing a language now also changes every video in the list that has
+  not started yet (before, it applied only to the videos added afterwards, so nothing seemed to
+  happen). Each row keeps its own menu for exceptions.
+- The meeting language starts as **Detect automatically** instead of the system's language.
+
 ## 1.5.0 — 2026-11-05
 
 - **New name: NEON MINUTES** (formerly *Neon Verbale*), now that everything is in English. New
