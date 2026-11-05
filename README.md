@@ -73,12 +73,12 @@ Nessun account, nessun servizio cloud: audio, video e trascrizioni non lasciano 
 
 |  | Modalità veloce (GPU) | Modalità CPU |
 |---|---|---|
-| Sistema | Windows 10 o 11 a 64 bit | Windows 10 o 11 a 64 bit |
+| Sistema | Windows 10/11 a 64 bit, Linux x86_64 (glibc 2.28+) | Windows 10/11 a 64 bit, Linux x86_64 (glibc 2.28+) |
 | Scheda video | NVIDIA con almeno **4 GB** di VRAM, architettura **Turing o successiva** (compute capability 7.5+): GTX 1650 e successive, RTX 20xx/30xx/40xx/50xx, Quadro RTX, RTX A-series, RTX Ada | qualsiasi (Intel, AMD, NVIDIA più vecchie) |
 | Driver | NVIDIA **570** o successivo | — |
 | RAM | 8 GB (consigliati 16 GB) | 8 GB (consigliati 16 GB) |
-| Da scaricare all'installazione | circa 6 GB | circa 2 GB |
-| Disco | circa 9 GB (fino a 12 GB durante l'installazione) | circa 3 GB |
+| Da scaricare all'installazione | circa 6 GB (Linux: 7,5 GB) | circa 2 GB |
+| Disco | circa 9 GB, fino a 12 durante l'installazione (Linux: 11 GB, fino a 15) | circa 3 GB (Linux: 4 GB) |
 | Modello Whisper | large-v3 | large-v3-turbo |
 | Un'ora di riunione | **circa 12-15 minuti** | circa 1 ora e mezza su un processore potente, 2-3 ore su un portatile da ufficio |
 

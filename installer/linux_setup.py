@@ -467,11 +467,18 @@ def wizard(args, plan: Plan) -> int:
     back_btn.configure(command=lambda: show(0))
     next_btn.configure(command=go_next)
     show(0)
-    if args.smoke_ui:  # CI: build and show every page except the installing one, then quit
-        accepted.set(True)
-        root.after(800, lambda: show(1))
-        root.after(1600, lambda: finished(0, []))
-        root.after(2400, root.destroy)
+    if args.smoke_ui:  # CI: show every page except the installing one, then quit
+        shots = os.environ.get("NEON_SMOKE_SHOTS")  # folder for screenshots of the virtual display
+
+        def snap(name):
+            if shots:
+                root.update()
+                subprocess.run(["import", "-window", "root", f"{shots}/{name}.png"], check=False)
+
+        root.after(1500, lambda: (accepted.set(True), show(0), snap("wizard_1_licenza")))
+        root.after(3000, lambda: (show(1), snap("wizard_2_riepilogo")))
+        root.after(4500, lambda: (finished(0, []), snap("wizard_3_fine")))
+        root.after(6000, root.destroy)
     root.mainloop()
     return result["code"]
 

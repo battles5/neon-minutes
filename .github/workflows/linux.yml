@@ -28,7 +28,7 @@ jobs:
       - name: Strumenti di sistema per i test
         run: |
           sudo apt-get update -q
-          sudo apt-get install -y -q xvfb espeak-ng libgl1 libegl1 libxkbcommon0
+          sudo apt-get install -y -q xvfb espeak-ng libgl1 libegl1 libxkbcommon0 imagemagick
 
       - name: Ambiente di build con le versioni provate
         run: |
@@ -65,16 +65,21 @@ jobs:
         run: |
           export HOME="$RUNNER_TEMP/home"
           APP="$HOME/.local/lib/neon-verbale"
-          xvfb-run -a "$APP/runtime/bin/python3" -I -c "
-          import tkinter as tk
+          export NEON_SMOKE_SHOTS="$RUNNER_TEMP/screenshot" && mkdir -p "$NEON_SMOKE_SHOTS"
+          xvfb-run -a -s "-screen 0 1100x780x24" "$APP/runtime/bin/python3" -I -c "
+          import os, subprocess, tkinter as tk
           from meeting_transcriber import gui, theme
           root = tk.Tk(className='neon-verbale')
           app = gui.App(root, theme.apply(root))
-          root.after(3000, root.destroy)
+          root.geometry('+0+0')
+          shot = lambda: subprocess.run(['import', '-window', 'root', os.environ['NEON_SMOKE_SHOTS'] + '/programma.png'])
+          root.after(2500, shot)
+          root.after(3500, root.destroy)
           root.mainloop()
           print('finestra ok')"
-          xvfb-run -a sh dist/NeonVerbale-*-linux-x86_64.run --smoke-ui
+          xvfb-run -a -s "-screen 0 1100x780x24" sh dist/NeonVerbale-*-linux-x86_64.run --smoke-ui
           echo "wizard ok"
+          ls "$NEON_SMOKE_SHOTS"
 
       - name: "Prova: disinstallazione"
         run: |
@@ -89,6 +94,11 @@ jobs:
         with:
           name: installer-linux
           path: dist/NeonVerbale-*-linux-x86_64.run
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: screenshot-linux
+          path: ${{ runner.temp }}/screenshot
 
       - name: Allegato alla release del tag
         if: startsWith(github.ref, 'refs/tags/v')
