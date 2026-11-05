@@ -23,6 +23,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from prepare_stage import WHISPER_FILES, WHISPER_REPOS, _dir_size, stage_requirements, write_notices  # noqa: E402
 
+CUDA_UNPACK = 1.6
 TORCH_INDEX = {"cuda": "https://download.pytorch.org/whl/cu128", "cpu": "https://download.pytorch.org/whl/cpu"}
 
 
@@ -58,13 +59,13 @@ def write_sizes(installer_dir: Path, payload: Path):
         info = api.model_info(repo, files_metadata=True)
         whisper[variant] = sum(s.size or 0 for s in info.siblings if s.rfilename.startswith(WHISPER_FILES))
 
-    # Installed size from the (CPU) build venv; the CUDA build scaled by its download size.
+    # Installed size from the (CPU) build venv. The CUDA build (torch plus NVIDIA's wheels) is not
+    # installed here: it unpacks to about 1.6 times its download, as measured with cu128 on Windows.
     site = Path(sysconfig.get_paths()["purelib"])
     torch_dirs = sum(_dir_size(site / d) for d in ("torch", "torchaudio") if (site / d).exists())
     others = _dir_size(site) - torch_dirs
-    ratio = torch_dirs / torch["cpu"]
     base = _dir_size(payload)
-    installed = {v: int(base + others + torch[v] * ratio) for v in ("cuda", "cpu")}
+    installed = {"cpu": int(base + others + torch_dirs), "cuda": int(base + others + torch["cuda"] * CUDA_UNPACK)}
     sizes = {
         "download": {"torch": torch, "deps": deps, "whisper": whisper},
         "installed": installed,

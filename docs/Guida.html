@@ -101,13 +101,16 @@ cattura dello schermo) e produce:</p>
   <tr><td>Da scaricare durante l'installazione</td><td>circa 6 GB</td><td>circa 2 GB</td></tr>
   <tr><td>Spazio su disco</td><td>circa 9 GB (fino a 12 GB durante l'installazione)</td><td>circa 3 GB</td></tr>
 </table>
-<p>In entrambi i casi: Windows 10 o 11 a 64 bit, almeno 8 GB di RAM (consigliati 16 GB) e una
-connessione a Internet <em>solo durante l'installazione</em>. Non servono diritti di amministratore.</p>
+<p>In entrambi i casi: Windows 10 o 11 a 64 bit oppure Linux x86_64 (glibc 2.28 o successiva), almeno
+8 GB di RAM (consigliati 16 GB) e una connessione a Internet <em>solo durante l'installazione</em>. Non
+servono diritti di amministratore. Su Linux le dimensioni dei download sono un po' diverse: le mostra
+l'installer prima di iniziare.</p>
 <div class="note">Non devi scegliere tu: il programma di installazione controlla il PC, mostra cosa ha
 trovato nella pagina <strong>Verifica dell'hardware</strong> e installa la versione giusta. Anche dopo,
 il programma sceglie da solo GPU o CPU a ogni avvio.</div>
 
 <h2 id="installazione">3. Installazione</h2>
+<h3>Windows</h3>
 <ol>
   <li>Avvia <code>NeonVerbale-Setup-&lt;versione&gt;.exe</code>.</li>
   <li>Se compare <strong>"PC protetto da Windows"</strong>: il programma non è firmato digitalmente.
@@ -132,6 +135,32 @@ nel menu Start, con il programma, questa guida, <em>Ripara componenti</em> e <em
 <div class="warn">Se l'installazione dei componenti non riesce (di solito per la connessione o per il
 proxy aziendale), il wizard propone di riprovare. Puoi anche riprovare più tardi da
 <strong>Start → Neon Verbale → Ripara componenti</strong>.</div>
+
+<h3 id="linux">Linux</h3>
+<p>Serve un PC x86_64 con una distribuzione recente (glibc 2.28 o successiva: Ubuntu 20.04+, Debian 10+,
+Fedora 29+ e simili). Non servono <code>sudo</code> né pacchetti di sistema.</p>
+<ol>
+  <li>Scarica <code>NeonVerbale-&lt;versione&gt;-linux-x86_64.run</code> dalla pagina delle
+    <a href="https://github.com/battles5/neon-verbale/releases/latest">Release</a>.</li>
+  <li>Avvialo con <code>sh NeonVerbale-&lt;versione&gt;-linux-x86_64.run</code>, oppure rendilo eseguibile
+    (tasto destro → Proprietà → Permetti l'esecuzione) e fai doppio clic.</li>
+  <li>Si apre il wizard: licenza, poi <strong>Verifica dell'hardware e spazio necessario</strong> (versione
+    GPU o CPU, GB da scaricare, spazio, tempo), poi l'avanzamento con il tempo rimanente. Senza desktop
+    grafico, o con l'opzione <code>--cli</code>, la stessa procedura avviene nel terminale.</li>
+</ol>
+<p>Il programma va in <code>~/.local/lib/neon-verbale</code> e i dati in <code>~/.local/share/neon-verbale</code>.
+Trovi <strong>Neon Verbale</strong> nel menu delle applicazioni; da terminale c'è il comando
+<code>~/.local/bin/neon-verbale</code>:</p>
+<table>
+  <tr><th>Comando</th><th>Effetto</th></tr>
+  <tr><td><code>neon-verbale [video…]</code></td><td>apre la finestra, con i video indicati già in lista</td></tr>
+  <tr><td><code>neon-verbale --trascrivi video.mp4</code></td><td>trascrive da terminale (vedi la sezione <a href="#riga-di-comando">Riga di comando</a>)</td></tr>
+  <tr><td><code>neon-verbale --ripara</code></td><td>reinstalla PyTorch e le librerie, per esempio dopo aver aggiornato il driver NVIDIA</td></tr>
+  <tr><td><code>neon-verbale --disinstalla</code></td><td>rimuove il programma, chiedendo se tenere modelli e libreria delle voci (anche dal menu: tasto destro sull'icona → Disinstalla)</td></tr>
+</table>
+<p>Opzioni dell'installer: <code>--cli</code> (solo terminale), <code>-y</code> (nessuna domanda),
+<code>--cpu</code> (versione per CPU anche con una GPU NVIDIA), <code>--no-models</code> (Whisper al primo uso),
+<code>--no-desktop</code> (niente collegamento sul desktop).</p>
 
 <h2 id="uso">4. Come si usa</h2>
 <ol>
@@ -231,9 +260,9 @@ alcuni minuti di download.</p>
 <h2 id="dati">10. Dove sono i dati</h2>
 <table>
   <tr><th>Cosa</th><th>Dove</th></tr>
-  <tr><td>Programma</td><td><code>%LOCALAPPDATA%\Programs\Neon Verbale</code></td></tr>
-  <tr><td>Libreria delle voci, glossario, tempi, registro errori</td><td><code>%LOCALAPPDATA%\Neon Verbale</code></td></tr>
-  <tr><td>Modelli Whisper scaricati</td><td><code>%LOCALAPPDATA%\Neon Verbale\modelli</code></td></tr>
+  <tr><td>Programma</td><td>Windows: <code>%LOCALAPPDATA%\Programs\Neon Verbale</code><br>Linux: <code>~/.local/lib/neon-verbale</code></td></tr>
+  <tr><td>Libreria delle voci, glossario, tempi, registro errori</td><td>Windows: <code>%LOCALAPPDATA%\Neon Verbale</code><br>Linux: <code>~/.local/share/neon-verbale</code></td></tr>
+  <tr><td>Modelli Whisper scaricati</td><td>la sottocartella <code>modelli</code> della cartella dei dati</td></tr>
   <tr><td>Trascrizioni</td><td>cartella <code>Trascrizioni</code> accanto a ogni video</td></tr>
 </table>
 <p>Per aprire una di queste cartelle incolla il percorso nella barra degli indirizzi di Esplora file.</p>
@@ -288,6 +317,9 @@ la <a href="#riga-di-comando">riga di comando</a> puoi indicare il numero di par
 <p>Da <strong>Impostazioni → App → App installate → Neon Verbale → Disinstalla</strong>, oppure
 da <strong>Start → Neon Verbale → Disinstalla</strong>. Ti viene chiesto se eliminare anche
 modelli scaricati e libreria delle voci; le trascrizioni accanto ai video restano dove sono.</p>
+<p>Su Linux: <code>neon-verbale --disinstalla</code>, oppure tasto destro sull'icona nel menu delle
+applicazioni → <em>Disinstalla Neon Verbale</em>. Anche qui ti viene chiesto se eliminare modelli e
+libreria delle voci.</p>
 
 <h2 id="licenze">15. Licenze</h2>
 <p>Neon Verbale è software libero con licenza <strong>MIT No Attribution</strong> (MIT-0): puoi
@@ -300,7 +332,7 @@ modifiche), RapidOCR e OpenCV (Apache 2.0), PyAV con FFmpeg e molti altri. L'ele
 attribuzioni, è in <code>THIRD-PARTY-NOTICES.txt</code>.</p>
 </main>
 <footer>
-  <div class="wrap">Neon Verbale 1.2.0 · licenza MIT-0 · <a href="https://github.com/battles5/neon-verbale">github.com/battles5/neon-verbale</a></div>
+  <div class="wrap">Neon Verbale 1.3.0 · licenza MIT-0 · <a href="https://github.com/battles5/neon-verbale">github.com/battles5/neon-verbale</a></div>
 </footer>
 </body>
 </html>

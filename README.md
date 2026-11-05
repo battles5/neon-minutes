@@ -7,7 +7,7 @@
 <p align="center">
   <em>ｖｅｒｂａｌｉ　ａｌ　ｎｅｏｎ</em> — trascrizione delle riunioni con i nomi di chi parla, tutta sul tuo PC.<br>
   <sub>Fino alla versione 1.1.0 si chiamava <em>Trascrittore riunioni</em>.</sub><br>
-  <a href="https://github.com/battles5/neon-verbale/releases/latest"><strong>Scarica il setup per Windows</strong></a>
+  <a href="https://github.com/battles5/neon-verbale/releases/latest"><strong>Scarica per Windows o Linux</strong></a>
   ·
   <a href="docs/Guida.html">Guida completa</a>
   ·
@@ -19,6 +19,8 @@
 <p align="center">
   <img alt="Licenza MIT-0" src="https://img.shields.io/badge/licenza-MIT--0-ff2975">
   <img alt="Windows 10/11" src="https://img.shields.io/badge/Windows-10%20%7C%2011-2de2e6">
+  <img alt="Linux x86_64" src="https://img.shields.io/badge/Linux-x86__64-2de2e6">
+  <img alt="Build Linux" src="https://github.com/battles5/neon-verbale/actions/workflows/linux.yml/badge.svg">
   <img alt="Python 3.12" src="https://img.shields.io/badge/Python-3.12-ffd640">
   <img alt="Offline" src="https://img.shields.io/badge/elaborazione-100%25%20locale-b026ff">
 </p>
@@ -63,8 +65,9 @@ Nessun account, nessun servizio cloud: audio, video e trascrizioni non lasciano 
   il sistema. C'è anche la riga di comando per gli utenti esperti.
 - **Si adatta all'hardware**: usa la GPU NVIDIA quando c'è e il modello più leggero
   large-v3-turbo sulla CPU.
-- **Installer Windows** con wizard in italiano, senza diritti di amministratore, con
-  disinstallazione pulita.
+- **Installer per Windows e Linux** con wizard in italiano, senza diritti di amministratore, con
+  disinstallazione pulita. Quello per Linux viene costruito e provato da GitHub Actions a ogni
+  versione.
 
 ## Requisiti minimi
 
@@ -86,6 +89,8 @@ A ogni avvio il programma sceglie GPU o CPU.
 
 ## Installazione
 
+### Windows
+
 1. Scarica `NeonVerbale-Setup-<versione>.exe` dalle
    [Release](https://github.com/battles5/neon-verbale/releases/latest).
 2. Avvialo. Il setup non è firmato digitalmente: se Windows mostra "PC protetto da Windows",
@@ -103,6 +108,32 @@ collegamento sul desktop (la piuma al neon) e la voce nel menu Start, che compre
 **Aggiornare da *Trascrittore riunioni* (1.1.0 o precedenti):** basta avviare il nuovo setup. Si
 installa sopra la versione esistente, nella stessa cartella, sostituisce i collegamenti con
 quelli nuovi e, al primo avvio, sposta voci, glossario e modelli scaricati sotto il nuovo nome.
+
+### Linux
+
+1. Scarica `NeonVerbale-<versione>-linux-x86_64.run` dalle
+   [Release](https://github.com/battles5/neon-verbale/releases/latest).
+2. Avvialo da terminale, oppure rendilo eseguibile e fai doppio clic:
+   ```bash
+   sh NeonVerbale-<versione>-linux-x86_64.run
+   ```
+3. Con un desktop grafico si apre il wizard: licenza, poi **Verifica dell'hardware e spazio
+   necessario** (versione GPU o CPU, GB da scaricare, spazio, tempo), poi l'avanzamento con il
+   tempo rimanente. Senza desktop, o con `--cli`, la stessa procedura avviene nel terminale.
+
+Non servono `sudo` né pacchetti di sistema. Il programma va in `~/.local/lib/neon-verbale`, i
+dati in `~/.local/share/neon-verbale`. L'installer crea la voce nel menu delle applicazioni e il
+comando `~/.local/bin/neon-verbale`:
+
+| Comando | Effetto |
+|---|---|
+| `neon-verbale [video…]` | apre la finestra, con i video indicati già in lista |
+| `neon-verbale --trascrivi video.mp4` | trascrive da terminale (`--trascrivi --help` per le opzioni) |
+| `neon-verbale --ripara` | reinstalla PyTorch e le librerie, per esempio dopo aver aggiornato il driver NVIDIA |
+| `neon-verbale --disinstalla` | rimuove il programma; chiede se tenere modelli e libreria delle voci |
+
+Opzioni dell'installer: `--cli` (solo terminale), `-y` (nessuna domanda), `--cpu` (versione per
+CPU anche con una GPU NVIDIA), `--no-models` (Whisper al primo uso), `--no-desktop`.
 
 ## Uso
 
@@ -164,8 +195,10 @@ salva il proprio risultato in `_lavoro\`: una nuova elaborazione rifà solo ciò
 - **I termini tecnici** possono essere trascritti male finché non li aggiungi al glossario.
 - **Senza GPU NVIDIA è lento**: circa una volta e mezza la durata della riunione su un
   processore potente.
-- **L'installer è solo per Windows 10/11 a 64 bit.** Il codice Python è portabile, ma è stato
-  provato solo su Windows.
+- **Installer per Windows 10/11 a 64 bit e Linux x86_64** (glibc 2.28 o successiva: Ubuntu
+  20.04+, Debian 10+, Fedora 29+ e simili). Niente macOS. Su Linux il programma viene provato
+  automaticamente a ogni versione (Ubuntu 24.04, modalità CPU, su GitHub Actions); la modalità
+  GPU su Linux non è ancora stata provata su una scheda vera.
 - **È tarato sull'italiano** e provato su registrazioni Teams di 13 e 26 minuti. Le altre
   lingue funzionano con `--language`, ma non sono state verificate.
 - **Il setup non è firmato digitalmente**, quindi Windows SmartScreen chiede una conferma.
@@ -186,12 +219,12 @@ durata dell'audio e la separazione delle voci circa 0,65 volte.
 
 ## Dati e privacy
 
-| Cosa | Dove |
-|---|---|
-| Programma | `%LOCALAPPDATA%\Programs\Neon Verbale` |
-| Libreria voci, glossario, tempi, log | `%LOCALAPPDATA%\Neon Verbale` |
-| Modelli Whisper scaricati | `%LOCALAPPDATA%\Neon Verbale\modelli` |
-| Trascrizioni | cartella `Trascrizioni` accanto a ogni video |
+| Cosa | Windows | Linux |
+|---|---|---|
+| Programma | `%LOCALAPPDATA%\Programs\Neon Verbale` | `~/.local/lib/neon-verbale` |
+| Libreria voci, glossario, tempi, log | `%LOCALAPPDATA%\Neon Verbale` | `~/.local/share/neon-verbale` |
+| Modelli Whisper scaricati | `…\Neon Verbale\modelli` | `~/.local/share/neon-verbale/modelli` |
+| Trascrizioni | cartella `Trascrizioni` accanto a ogni video | idem |
 
 Il programma si collega a Internet solo per scaricare i componenti. Alla disinstallazione puoi
 scegliere se cancellare anche modelli e libreria delle voci.
@@ -232,6 +265,18 @@ Lo script:
 PyTorch, nella versione CUDA o CPU, e Whisper vengono scaricati sul PC dell'utente durante
 l'installazione, da `installer\postinstall.py`.
 
+**L'installer per Linux** lo costruisce GitHub Actions ([`.github/workflows/linux.yml`](.github/workflows/linux.yml))
+a ogni tag `v*`, o a mano dalla scheda *Actions*:
+
+1. crea un ambiente con le versioni provate su Windows (`installer/constraints.txt`);
+2. prende il modello pyannote dalla release [`modelli-1`](https://github.com/battles5/neon-verbale/releases/tag/modelli-1),
+   così la CI non ha bisogno di token;
+3. con `installer/build_linux.sh` assembla il `.run` autoestraente: Python portatile,
+   programma, modello, guida, più il wizard `installer/linux_setup.py`;
+4. lo prova su una home vuota: installazione, trascrizione di una frase sintetizzata, finestra
+   e wizard su uno schermo virtuale, disinstallazione;
+5. lo allega alla release del tag.
+
 ```
 meeting_transcriber/
   gui.py            interfaccia Tkinter, barre e ETA
@@ -245,7 +290,7 @@ meeting_transcriber/
   render.py         parole → interventi, Markdown/SRT/VTT/JSON
   hardware.py       scelta GPU/CPU
   paths.py          cartelle del programma e dei dati
-installer/          wizard Inno Setup, post-installazione, build
+installer/          wizard Inno Setup (Windows) e Tk (Linux), post-installazione, build
 docs/Guida.html     guida per gli utenti (inclusa nell'installer)
 ```
 

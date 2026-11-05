@@ -65,7 +65,7 @@ jobs:
         run: |
           export HOME="$RUNNER_TEMP/home"
           APP="$HOME/.local/lib/neon-verbale"
-          xvfb-run -a "$APP/runtime/bin/python3" -s -E -c "
+          xvfb-run -a "$APP/runtime/bin/python3" -I -c "
           import tkinter as tk
           from meeting_transcriber import gui, theme
           root = tk.Tk(className='neon-verbale')

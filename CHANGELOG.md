@@ -1,5 +1,20 @@
 # Modifiche
 
+## 1.3.0 — 05/11/2026
+
+- **Installer per Linux x86_64**: `NeonVerbale-<versione>-linux-x86_64.run`, un file autoestraente
+  con Python portatile, programma, modello pyannote e guida.
+  - Con un desktop grafico mostra un wizard nello stile di Neon Verbale: licenza, verifica
+    dell'hardware con GB da scaricare, spazio e tempo, avanzamento con ETA, pagina finale.
+  - Senza desktop funziona da terminale.
+  - Installa nella home, senza `sudo`: voce nel menu delle applicazioni, comando `neon-verbale`
+    (anche `--trascrivi`, `--ripara`, `--disinstalla`).
+  - GPU NVIDIA con CUDA come su Windows, altrimenti CPU.
+- L'installer per Linux viene costruito e provato da GitHub Actions a ogni versione:
+  installazione, trascrizione di prova, finestra e wizard su schermo virtuale, disinstallazione.
+- Codice portabile: cartella dei dati XDG su Linux, icona della finestra, filtri dei file che
+  riconoscono anche le estensioni maiuscole.
+
 ## 1.2.0 — 05/11/2026
 
 - **Nuovo nome: NEON VERBALE** (prima *Trascrittore riunioni*), con icona synthwave (piuma al

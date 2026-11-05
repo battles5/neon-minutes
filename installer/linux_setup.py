@@ -165,17 +165,19 @@ for d in "$APP"/runtime/lib/python3.*/site-packages/nvidia/*/lib; do
     [ -d "$d" ] && LD_LIBRARY_PATH="$d${{LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}}"
 done
 export LD_LIBRARY_PATH
+# -I: isolated, so neither the working directory (which may hold another copy of the code), the
+# user's site-packages nor PYTHON* variables get in; the program is found via neon_verbale.pth.
 case "$1" in
-    --trascrivi) shift; exec "$PY" -s -E -m meeting_transcriber "$@" ;;
-    --ripara) exec "$PY" -s -E -u "$APP/installer/postinstall.py" --app "$APP" --variant auto --models ;;
-    --disinstalla) shift; exec "$PY" -s -E "$APP/installer/linux_setup.py" --uninstall "$@" ;;
+    --trascrivi) shift; exec "$PY" -I -m meeting_transcriber "$@" ;;
+    --ripara) exec "$PY" -I -u "$APP/installer/postinstall.py" --app "$APP" --variant auto --models ;;
+    --disinstalla) shift; exec "$PY" -I "$APP/installer/linux_setup.py" --uninstall "$@" ;;
     -h|--help)
         echo "neon-verbale [file...]           apre la finestra (con i file indicati)"
         echo "neon-verbale --trascrivi file    trascrive da terminale (--help per le opzioni)"
         echo "neon-verbale --ripara            reinstalla PyTorch e le librerie"
         echo "neon-verbale --disinstalla       rimuove il programma"
         exit 0 ;;
-    *) exec "$PY" -s -E -m meeting_transcriber.gui "$@" ;;
+    *) exec "$PY" -I -m meeting_transcriber.gui "$@" ;;
 esac
 """
 
