@@ -51,7 +51,7 @@ def _license(dist: metadata.Distribution) -> str:
     if classifiers:
         return ", ".join(dict.fromkeys(classifiers))
     text = (meta.get("License") or "").strip()
-    return text.splitlines()[0][:80] if text else "vedi il pacchetto"
+    return text.splitlines()[0][:80] if text else "see the package"
 
 
 def _homepage(dist: metadata.Distribution) -> str:

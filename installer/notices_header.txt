@@ -1,43 +1,43 @@
-AVVISI DI TERZE PARTI — Neon Verbale
-=====================================
+THIRD-PARTY NOTICES — Neon Verbale
+==================================
 
-Il codice di Neon Verbale è distribuito con licenza MIT No Attribution
-(vedi LICENSE.txt). Il programma si appoggia a componenti di terze parti, ciascuno
-con la propria licenza, elencati qui sotto.
+The Neon Verbale code is distributed under the MIT No Attribution licence
+(see LICENSE.txt). The program relies on third-party components, each with its
+own licence, listed below.
 
 
-1. COMPONENTI INCLUSI NEL FILE DI INSTALLAZIONE
------------------------------------------------
+1. COMPONENTS INCLUDED IN THE INSTALLER
+---------------------------------------
 
-Python 3.12 (build "python-build-standalone" di Astral)
-  Licenza: Python Software Foundation License (PSF-2.0).
-  Include librerie con licenze proprie (OpenSSL: Apache-2.0; Tcl/Tk: licenza Tcl,
-  tipo BSD; SQLite: pubblico dominio; libffi, Expat: MIT; zlib: zlib; bzip2: tipo
-  BSD; XZ Utils: 0BSD; mpdecimal: BSD-2-Clause). I testi completi sono nella
-  cartella runtime\ dell'installazione.
+Python 3.12 (Astral's "python-build-standalone" build)
+  Licence: Python Software Foundation License (PSF-2.0).
+  Includes libraries with their own licences (OpenSSL: Apache-2.0; Tcl/Tk: Tcl
+  licence, BSD-style; SQLite: public domain; libffi, Expat: MIT; zlib: zlib; bzip2:
+  BSD-style; XZ Utils: 0BSD; mpdecimal: BSD-2-Clause). The full texts are in the
+  runtime folder of the installation.
   https://www.python.org/  —  https://github.com/astral-sh/python-build-standalone
 
-pyannote speaker-diarization-community-1 (modello di separazione delle voci)
-  © pyannoteAI. Licenza: Creative Commons Attribution 4.0 International (CC BY 4.0),
+pyannote speaker-diarization-community-1 (speaker separation model)
+  © pyannoteAI. Licence: Creative Commons Attribution 4.0 International (CC BY 4.0),
   https://creativecommons.org/licenses/by/4.0/
-  Fonte: https://huggingface.co/pyannote/speaker-diarization-community-1
-  Incluso senza modifiche, cartella models\pyannote-community-1 (senza l'immagine
-  dimostrativa). Contiene:
-  - modello di segmentazione pyannote;
-  - modello di embedding WeSpeaker ResNet34 addestrato su VoxCeleb, CC BY 4.0
+  Source: https://huggingface.co/pyannote/speaker-diarization-community-1
+  Included unmodified, in the models/pyannote-community-1 folder (without the
+  demo image). It contains:
+  - the pyannote segmentation model;
+  - the WeSpeaker ResNet34 embedding model trained on VoxCeleb, CC BY 4.0
     (Wang et al., "Wespeaker: A research and production oriented speaker embedding
     learning toolkit", ICASSP 2023);
-  - modello PLDA addestrato dal gruppo BUT Speech@FIT (VBx).
+  - the PLDA model trained by the BUT Speech@FIT group (VBx).
 
 
-2. COMPONENTI SCARICATI DURANTE L'INSTALLAZIONE O AL PRIMO USO
---------------------------------------------------------------
+2. COMPONENTS DOWNLOADED DURING INSTALLATION OR AT FIRST USE
+------------------------------------------------------------
 
-Modelli Whisper large-v3 e large-v3-turbo (OpenAI, conversione CTranslate2 per
-faster-whisper). Licenza: MIT. https://github.com/openai/whisper
+Whisper large-v3 and large-v3-turbo models (OpenAI, CTranslate2 conversion for
+faster-whisper). Licence: MIT. https://github.com/openai/whisper
 
-PyTorch per CUDA include librerie NVIDIA CUDA/cuDNN distribuite da NVIDIA alle
-condizioni della NVIDIA Software License per i componenti ridistribuibili.
+PyTorch for CUDA includes NVIDIA CUDA/cuDNN libraries distributed by NVIDIA under
+the terms of the NVIDIA Software License for redistributable components.
 
-Pacchetti Python, scaricati da PyPI e da download.pytorch.org nelle versioni
-indicate, con la licenza dichiarata nei loro metadati:
+Python packages, downloaded from PyPI and download.pytorch.org in the versions
+listed, with the licence declared in their metadata:

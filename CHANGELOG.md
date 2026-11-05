@@ -1,56 +1,58 @@
-# Modifiche
+# Changelog
 
-## 1.3.0 — 05/11/2026
+## 1.3.0 — 2026-11-05
 
-- **Installer per Linux x86_64**: `NeonVerbale-<versione>-linux-x86_64.run`, un file autoestraente
-  con Python portatile, programma, modello pyannote e guida.
-  - Con un desktop grafico mostra un wizard nello stile di Neon Verbale: licenza, verifica
-    dell'hardware con GB da scaricare, spazio e tempo, avanzamento con ETA, pagina finale.
-  - Senza desktop funziona da terminale.
-  - Installa nella home, senza `sudo`: voce nel menu delle applicazioni, comando `neon-verbale`
-    (anche `--trascrivi`, `--ripara`, `--disinstalla`).
-  - GPU NVIDIA con CUDA come su Windows, altrimenti CPU.
-- L'installer per Linux viene costruito e provato da GitHub Actions a ogni versione:
-  installazione, trascrizione di prova, finestra e wizard su schermo virtuale, disinstallazione.
-- Codice portabile: cartella dei dati XDG su Linux, icona della finestra, filtri dei file che
-  riconoscono anche le estensioni maiuscole.
+- **Linux x86_64 installer**: `NeonVerbale-<version>-linux-x86_64.run`, a self-extracting file
+  with portable Python, the program, the pyannote model and the guide.
+  - On a graphical desktop it shows a wizard in the Neon Verbale style: licence, hardware check
+    with GB to download, disk space and time, progress with ETA, final page.
+  - Without a desktop it runs in the terminal.
+  - Installs in the home folder, no `sudo`: an entry in the applications menu and the
+    `neon-verbale` command (also `--trascrivi`, `--ripara`, `--disinstalla`).
+  - NVIDIA GPU with CUDA as on Windows, CPU otherwise.
+- The Linux installer is built and tested by GitHub Actions for every release: installation, a test
+  transcription, window and wizard on a virtual screen, uninstall.
+- Portable code: XDG data folder on Linux, window icon, file filters that also accept upper-case
+  extensions.
+- Documentation (README, user guide, changelog) now in English; the guide is `docs/Guide.html`.
+  The program's window stays in Italian.
 
-## 1.2.0 — 05/11/2026
+## 1.2.0 — 2026-11-05
 
-- **Nuovo nome: NEON VERBALE** (prima *Trascrittore riunioni*), con icona synthwave (piuma al
-  neon su un sole a strisce), banner e immagini del wizard di installazione nello stesso stile.
-  Il repository è ora `battles5/neon-verbale`; i vecchi link vengono reindirizzati da GitHub.
-- **Aggiornamento senza perdite:** il setup si installa sopra *Trascrittore riunioni* (stesso
-  identificativo), toglie i vecchi collegamenti dal menu Start e dal desktop e, al primo avvio,
-  sposta la cartella dati (voci, glossario, tempi, modelli) sotto il nuovo nome.
-- Guida con i colori del nuovo stile.
+- **New name: NEON VERBALE** (formerly *Trascrittore riunioni*), with a synthwave icon (a neon
+  quill on a striped sun), a banner and installer wizard images in the same style. The repository
+  is now `battles5/neon-verbale`; GitHub redirects the old links.
+- **Lossless upgrade:** the setup installs over *Trascrittore riunioni* (same identifier), removes
+  the old Start menu and desktop shortcuts and, at the first start, moves the data folder (voices,
+  glossary, timings, models) under the new name.
+- User guide in the colours of the new style.
 
-## 1.1.0 — 05/11/2026
+## 1.1.0 — 2026-11-05
 
-- **Coda di registrazioni.** "Aggiungi video…" resta attivo anche durante un'elaborazione e i
-  video si accodano senza limiti, in una lista che scorre. "Avvia tutti" mette in coda tutto ciò
-  che è in attesa: finché la coda è attiva, anche i video aggiunti dopo entrano da soli. Su ogni
-  riga, ▶ avvia quel video (o lo mette per primo in coda) e ✕ lo toglie dalla lista. Lo stesso
-  video non può essere in lista due volte.
-- **ETA totale** di tutto quello che resta da fare, ricalcolata a ogni aggiunta o rimozione,
-  oltre all'ETA e alla posizione in coda di ogni video.
-- **Tema chiaro o scuro** come quello di Windows (letto all'avvio), con la barra del titolo
-  scura nel tema scuro. Nuove dipendenze: sv-ttk (MIT) e darkdetect (BSD-3-Clause).
-- "Apri cartella risultati" apre la cartella dell'ultimo video completato.
+- **Recording queue.** "Aggiungi video…" (add videos) stays active during processing and videos
+  queue up without limits, in a scrolling list. "Avvia tutti" (start all) queues everything that is
+  waiting: while the queue is active, videos added later join it by themselves. On each row, ▶
+  starts that video (or puts it first in the queue) and ✕ removes it from the list. The same video
+  cannot be in the list twice.
+- **Total ETA** of everything left to do, recomputed at every addition or removal, besides each
+  video's ETA and queue position.
+- **Light or dark theme** following Windows (read at start-up), with a dark title bar in the dark
+  theme. New dependencies: sv-ttk (MIT) and darkdetect (BSD-3-Clause).
+- "Apri cartella risultati" (open results folder) opens the folder of the last completed video.
 
-## 1.0.1 — 22/10/2026
+## 1.0.1 — 2026-10-22
 
-- **Corretto il blocco della finestra dopo la scelta di un video.** La stima dei tempi e il
-  rilevamento della scheda video caricavano PyTorch e faster-whisper nel thread della finestra,
-  mentre un altro thread caricava le stesse librerie CUDA. Al primo avvio dopo l'accensione questo
-  può richiedere più di un minuto, e Windows segnava la finestra come "Non risponde". Ora queste
-  operazioni girano in sottofondo, una alla volta: la finestra risponde subito, la riga del file
-  mostra "calcolo della stima…" e "Avvia" si attiva quando la stima è pronta.
-- I video trascinati sull'icona aprono subito la finestra, invece di aspettare la stima.
-- L'etichetta "nomi + voci" non resta più accesa dopo la fine della lettura dei nomi.
-- Verificato con le registrazioni dello schermo di Windows (Strumento di cattura: mp4 H.264
-  1672×1420 a 30 fps, audio AAC stereo 48 kHz).
+- **Fixed the window freezing after choosing a video.** The time estimate and the graphics card
+  detection loaded PyTorch and faster-whisper in the window's thread, while another thread loaded
+  the same CUDA libraries. On the first start after boot this can take more than a minute, and
+  Windows marked the window as "Not responding". These operations now run in the background, one
+  at a time: the window responds immediately, the file's row shows "calcolo della stima…"
+  (computing the estimate) and "Avvia" (start) is enabled when the estimate is ready.
+- Videos dropped on the icon open the window immediately, instead of waiting for the estimate.
+- The "nomi + voci" (names + voices) label no longer stays lit after name reading ends.
+- Tested with Windows screen recordings (Snipping Tool: H.264 mp4 1672×1420 at 30 fps, AAC stereo
+  audio at 48 kHz).
 
-## 1.0.0 — 21/10/2026
+## 1.0.0 — 2026-10-21
 
-Prima versione pubblica.
+First public release.

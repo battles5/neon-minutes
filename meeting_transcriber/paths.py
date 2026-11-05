@@ -38,7 +38,7 @@ if INSTALLED and sys.platform == "win32" and not DATA_DIR.exists() and _OLD_DATA
 
 MODELS_DIR = DATA_DIR / "modelli"
 BUNDLED_PYANNOTE = APP_DIR / "models" / "pyannote-community-1"
-GUIDE = APP_DIR / "docs" / "Guida.html"
+GUIDE = APP_DIR / "docs" / "Guide.html"
 ICON = APP_DIR / "assets" / "piuma.ico"
 ICON_PNG = APP_DIR / "assets" / "piuma.png"
 

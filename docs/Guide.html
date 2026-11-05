@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Neon Verbale user guide</title>
+<style>
+  :root {
+    --bg: #fbfbfd; --fg: #1d1d27; --muted: #5b5b6b; --line: #e3e3ec; --card: #ffffff;
+    --accent: #c0127e; --accent-soft: #fdeaf5; --warn: #9a5b00; --warn-soft: #fff6e5; --code: #f3f3f8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #120624; --fg: #ece6f7; --muted: #a99bc4; --line: #2e1c4a; --card: #1a0b33;
+      --accent: #2de2e6; --accent-soft: #261245; --warn: #f5c26b; --warn-soft: #33270f; --code: #22123d;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 "Segoe UI", system-ui, sans-serif; }
+  header { padding: 0 0 24px; border-bottom: 1px solid var(--line); }
+  header .banner { display: block; width: 100%; max-height: 320px; object-fit: cover; }
+  header .wrap { display: flex; gap: 20px; align-items: center; padding: 20px 16px 0; }
+  header .wrap img { width: 64px; height: 64px; }
+  h1 { margin: 0; font-size: 30px; }
+  header p { margin: 4px 0 0; color: var(--muted); }
+  .wrap { max-width: 900px; margin: 0 auto; }
+  main { padding: 8px 16px 64px; }
+  nav { margin: 24px 0; padding: 16px 20px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; }
+  nav ol { margin: 0; padding-left: 20px; columns: 2; column-gap: 32px; }
+  nav a { color: var(--accent); text-decoration: none; }
+  h2 { margin-top: 48px; padding-top: 8px; font-size: 23px; border-top: 1px solid var(--line); }
+  h3 { margin-top: 28px; font-size: 18px; }
+  a { color: var(--accent); }
+  code, pre { font-family: Consolas, "Cascadia Mono", monospace; font-size: 14px; background: var(--code); border-radius: 6px; }
+  code { padding: 1px 5px; }
+  pre { padding: 12px 14px; overflow-x: auto; line-height: 1.45; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; background: var(--card); }
+  th, td { text-align: left; vertical-align: top; padding: 8px 10px; border: 1px solid var(--line); }
+  th { background: var(--accent-soft); }
+  .note { padding: 12px 16px; border-radius: 10px; background: var(--accent-soft); margin: 16px 0; }
+  .warn { padding: 12px 16px; border-radius: 10px; background: var(--warn-soft); color: var(--fg); margin: 16px 0; border-left: 4px solid var(--warn); }
+  kbd { font-family: inherit; font-size: 14px; padding: 1px 6px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; background: var(--card); }
+  footer { color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); padding: 20px 16px 40px; }
+  @media (max-width: 640px) { nav ol { columns: 1; } h1 { font-size: 24px; } }
+</style>
+</head>
+<body>
+<header>
+  <img class="banner" src="../assets/banner.png" alt="NEON VERBALE — neon minutes">
+  <div class="wrap">
+    <img src="../assets/piuma.png" alt="">
+    <div>
+      <h1>Neon Verbale</h1>
+      <p>Meeting transcripts with the name of whoever is speaking, entirely on your own PC.
+        Formerly <em>Trascrittore riunioni</em> (up to version 1.1.0).</p>
+    </div>
+  </div>
+</header>
+<main class="wrap">
+
+<nav>
+  <ol>
+    <li><a href="#what">What it does</a></li>
+    <li><a href="#requirements">Requirements</a></li>
+    <li><a href="#installation">Installation</a></li>
+    <li><a href="#usage">How to use it</a></li>
+    <li><a href="#results">The results</a></li>
+    <li><a href="#names">How names are found</a></li>
+    <li><a href="#fix">Fixing a name</a></li>
+    <li><a href="#glossary">Glossary</a></li>
+    <li><a href="#performance">Timings</a></li>
+    <li><a href="#data">Where the data is</a></li>
+    <li><a href="#privacy">Privacy</a></li>
+    <li><a href="#troubleshooting">Troubleshooting</a></li>
+    <li><a href="#command-line">Command line</a></li>
+    <li><a href="#uninstall">Uninstalling</a></li>
+    <li><a href="#licenses">Licences</a></li>
+  </ol>
+</nav>
+
+<div class="note">The program's window is in Italian. This guide gives the Italian labels you see on
+screen, with their meaning in brackets, for example <strong>Aggiungi video…</strong> (<em>add videos</em>).</div>
+
+<h2 id="what">1. What it does</h2>
+<p>It takes the recording of a meeting (for example the <code>.mp4</code> from Microsoft Teams, or a screen
+recording) and produces:</p>
+<ul>
+  <li>the <strong>transcript</strong>, split by speaker turn (Italian by default);</li>
+  <li><strong>speaker separation</strong>: who said what;</li>
+  <li>the participants' <strong>names</strong>, when the Teams video shows them;</li>
+  <li><strong>subtitles</strong> to use with the video.</li>
+</ul>
+<p>It works without accounts or cloud services: everything is processed on your computer.</p>
+
+<h2 id="requirements">2. Requirements</h2>
+<table>
+  <tr><th></th><th>Fast mode (GPU)</th><th>CPU mode</th></tr>
+  <tr><td>Graphics card</td><td>NVIDIA with at least 4 GB of memory, Turing or newer architecture
+    (compute capability 7.5+): GTX 1650 and later, RTX 20xx/30xx/40xx/50xx, Quadro RTX, RTX A-series, RTX Ada</td>
+    <td>any (Intel, AMD, older NVIDIA)</td></tr>
+  <tr><td>Driver</td><td>NVIDIA 570 or later</td><td>—</td></tr>
+  <tr><td>Whisper model</td><td>large-v3 (the most accurate)</td><td>large-v3-turbo (almost as accurate, lighter)</td></tr>
+  <tr><td>One hour of meeting</td><td>about 12-15 minutes</td><td>about 1.5 hours on a fast processor, 2-3 hours on an office laptop</td></tr>
+  <tr><td>Downloaded during installation</td><td>about 6 GB (Linux: 7.5 GB)</td><td>about 2 GB</td></tr>
+  <tr><td>Disk space</td><td>about 9 GB, up to 12 GB during installation (Linux: 11 GB, up to 15)</td><td>about 3 GB (Linux: 4 GB)</td></tr>
+</table>
+<p>In both cases: Windows 10 or 11 64-bit, or Linux x86_64 (glibc 2.28 or later), at least 8 GB of RAM
+(16 GB recommended) and an Internet connection <em>only during installation</em>. No administrator rights
+are needed.</p>
+<div class="note">You do not have to choose: the installer checks the PC, shows what it found on the
+<strong>Verifica dell'hardware e spazio necessario</strong> page (<em>hardware check and required space</em>) and
+installs the right build. Afterwards, the program picks GPU or CPU by itself at every start.</div>
+
+<h2 id="installation">3. Installation</h2>
+<h3>Windows</h3>
+<ol>
+  <li>Run <code>NeonVerbale-Setup-&lt;version&gt;.exe</code>.</li>
+  <li>If <strong>"Windows protected your PC"</strong> appears: the program is not digitally signed.
+    Choose <em>More info</em> and then <em>Run anyway</em>.</li>
+  <li>Follow the wizard pages: licence, requirements, folder (the proposed one is fine), options.
+    Keep <em>Scarica subito il modello Whisper</em> (<em>download the Whisper model now</em>) ticked, so the
+    first transcription starts right away.</li>
+  <li>Before installing, the <strong>hardware check and required space</strong> page tells you which graphics
+    card it found, which build it will install, <strong>how much it will download</strong>, <strong>how much
+    space it needs</strong> and how long it will take with your connection. The same figures are
+    summarised on the <em>Pronto per l'installazione</em> (<em>ready to install</em>) page.</li>
+  <li>During installation the <strong>Installazione dei componenti</strong> page (<em>installing components</em>)
+    shows the current step, how much has been downloaded, the speed and the <strong>time left</strong>. With a
+    GPU it takes about 15-30 minutes depending on the connection (13 minutes measured on a fast line);
+    with the CPU build about 10-15 minutes. You can keep using the PC meanwhile.</li>
+  <li>At the end you can start the program right away.</li>
+</ol>
+<div class="note"><strong>Upgrading from <em>Trascrittore riunioni</em></strong> (1.1.0 or earlier): just run the
+new setup. It installs over the existing version, in the same folder, replaces the shortcuts with the new
+ones and, at the first start, moves voices, glossary and downloaded models under the new name.</div>
+<p>The installer creates the desktop shortcut (the quill) and a <em>Neon Verbale</em> folder in the Start
+menu, with the program, this guide, <em>Ripara componenti</em> (<em>repair components</em>) and
+<em>Disinstalla</em> (<em>uninstall</em>).</p>
+<div class="warn">If installing the components fails (usually because of the connection or a corporate
+proxy), the wizard offers to try again. You can also retry later from
+<strong>Start → Neon Verbale → Ripara componenti</strong>.</div>
+
+<h3 id="linux">Linux</h3>
+<p>You need an x86_64 PC with a recent distribution (glibc 2.28 or later: Ubuntu 20.04+, Debian 10+,
+Fedora 29+ and similar). No <code>sudo</code> and no system packages are needed.</p>
+<ol>
+  <li>Download <code>NeonVerbale-&lt;version&gt;-linux-x86_64.run</code> from the
+    <a href="https://github.com/battles5/neon-verbale/releases/latest">Releases</a> page.</li>
+  <li>Run it with <code>sh NeonVerbale-&lt;version&gt;-linux-x86_64.run</code>, or make it executable
+    (right click → Properties → Allow executing) and double-click it.</li>
+  <li>The wizard opens: licence, then the <strong>hardware check and required space</strong> (GPU or CPU
+    build, GB to download, space, time), then the progress with the time left. Without a graphical
+    desktop, or with the <code>--cli</code> option, the same steps run in the terminal.</li>
+</ol>
+<p>The program goes in <code>~/.local/lib/neon-verbale</code> and its data in <code>~/.local/share/neon-verbale</code>.
+You find <strong>Neon Verbale</strong> in the applications menu; in a terminal there is the command
+<code>~/.local/bin/neon-verbale</code>:</p>
+<table>
+  <tr><th>Command</th><th>What it does</th></tr>
+  <tr><td><code>neon-verbale [video…]</code></td><td>opens the window, with the given videos already in the list</td></tr>
+  <tr><td><code>neon-verbale --trascrivi video.mp4</code></td><td>transcribes from the terminal (see <a href="#command-line">Command line</a>)</td></tr>
+  <tr><td><code>neon-verbale --ripara</code></td><td>reinstalls PyTorch and the libraries, for example after updating the NVIDIA driver</td></tr>
+  <tr><td><code>neon-verbale --disinstalla</code></td><td>removes the program, asking whether to keep models and voice library (also from the menu: right click on the icon → Disinstalla)</td></tr>
+</table>
+<p>Installer options: <code>--cli</code> (terminal only), <code>-y</code> (no questions),
+<code>--cpu</code> (CPU build even with an NVIDIA GPU), <code>--no-models</code> (download Whisper at first use),
+<code>--no-desktop</code> (no desktop shortcut).</p>
+
+<h2 id="usage">4. How to use it</h2>
+<ol>
+  <li>Open <strong>Neon Verbale</strong> from the desktop or the Start/applications menu.</li>
+  <li>Click <strong>Aggiungi video…</strong> (<em>add videos</em>) and pick one or more recordings (you can
+    select several at once with <kbd>Ctrl</kbd> or <kbd>Shift</kbd>).</li>
+  <li>Click <strong>Avvia tutti</strong> (<em>start all</em>), or <strong>▶</strong> on the row of a single video.</li>
+</ol>
+<p><strong>The queue.</strong> You can add more videos at any time, even while one is being processed: the
+list has no limit and scrolls. Videos are processed one at a time (there is only one graphics card):</p>
+<ul>
+  <li><strong>Avvia tutti</strong> queues every waiting video. While the queue is running, videos added later
+    join it by themselves.</li>
+  <li><strong>▶</strong> on a row starts that video right away or, if another one is running, puts it first in
+    the queue.</li>
+  <li><strong>✕</strong> removes a video from the list (except the one being processed). The same video cannot
+    be in the list twice.</li>
+  <li>On Linux the two row buttons read <strong>Avvia</strong> (<em>start</em>) and <strong>Togli</strong>
+    (<em>remove</em>).</li>
+</ul>
+<p>Each video has a bar with the current step and the estimated time left (ETA), or its position in the
+queue; with several videos there is also the <strong>Totale</strong> (<em>total</em>) row, with the ETA of
+everything still to do, updated at every addition or removal. Above the list you can see whether the
+program is using the GPU or the CPU. <strong>Apri cartella risultati</strong> (<em>open results folder</em>)
+shows the files of the last completed video.</p>
+<p>The window follows the system's light or dark theme, read at start-up.</p>
+<p><strong>Shortcut:</strong> drop one or more videos on the quill icon on the desktop: the window opens with
+those files already in the list.</p>
+<p>Accepted formats: <code>mp4</code>, <code>mkv</code>, <code>mov</code>, <code>avi</code>, <code>webm</code>
+and audio-only files (<code>m4a</code>, <code>mp3</code>, <code>wav</code>, <code>ogg</code>). With audio-only
+files the voices are separated, but names cannot be read.</p>
+
+<h2 id="results">5. The results</h2>
+<p>A <code>Trascrizioni</code> folder is created next to the videos, with one subfolder per video:</p>
+<pre>Meeting-20261020.mp4
+Trascrizioni\
+  Meeting-20261020\
+    trascrizione.md     text to read: participants, speaking time, turns
+    trascrizione.srt    subtitles (VLC, video players, editing software)
+    trascrizione.vtt    web subtitles, with the speaker's name
+    trascrizione.json   all the data, word by word with timestamps
+    speakers.json       who is who: can be corrected by hand
+    _lavoro\            intermediate results, used to regenerate quickly</pre>
+<p><code>trascrizione.md</code> is a plain text file (Markdown): it opens with Notepad, Word or any editor.
+Turns look like this:</p>
+<pre>**[00:04:52] Mario Rossi:** A questo proposito, riesci a mandarmi le specifiche entro venerdì?</pre>
+
+<h2 id="names">6. How names are found</h2>
+<ol>
+  <li>The <strong>pyannote</strong> model listens to the audio and groups the voices (SPEAKER_00, SPEAKER_01...).</li>
+  <li>In <strong>Teams recordings</strong> the name of whoever is talking is highlighted with a purple box. The
+    program looks at the video twice a second and reads those names.</li>
+  <li>For each voice it checks which name is highlighted <em>while that voice is speaking</em> and not while
+    the others are. This way an open microphone, or the label of whoever shares the screen, does not
+    "steal" other people's sentences.</li>
+  <li>If the video is not enough, it uses the <strong>voice library</strong>: the voiceprints of people
+    recognised in previous meetings. The library grows by itself with every meeting.</li>
+  <li>When it is not sure, it writes <code>Speaker 2</code>, sometimes with a hint:
+    <code>Speaker 2 (forse: Mario Rossi)</code> (<em>forse</em> means <em>maybe</em>).</li>
+</ol>
+<div class="note">Names are read well from <strong>recordings made by Teams</strong>. In screen captures of
+the live Teams client the speaker is signalled differently: there the voice library and manual
+corrections do the job.</div>
+
+<h2 id="fix">7. Fixing a name</h2>
+<ol>
+  <li>Open <code>speakers.json</code> in the meeting's folder (right click → Open with → Notepad).</li>
+  <li>Change the <code>"name"</code> value of the wrong voice. For example:
+<pre>"SPEAKER_02": {
+  "name": "Giulia Bianchi",
+  ...</pre></li>
+  <li>Save and process the same video again with the program. Only the <code>trascrizione.*</code> files are
+    regenerated, in a second.</li>
+</ol>
+<p>The correction also goes into the voice library and helps recognise that person in later meetings. If
+two different voices are the same person, give both the same name: their turns are merged.</p>
+
+<h2 id="glossary">8. Glossary</h2>
+<p>The <strong>Glossario…</strong> (<em>glossary</em>) button opens a text file where you write, one per line,
+the terms Whisper should spell correctly: project names, acronyms, products, jargon. Example:</p>
+<pre>ProgettoAlfa
+GitLab
+fine-tuning</pre>
+<p>Participant names read from the video are added automatically. The glossary applies to transcriptions
+made after you change it.</p>
+
+<h2 id="performance">9. Timings</h2>
+<table>
+  <tr><th>Test recording</th><th>Length</th><th>GPU (RTX 2000 Ada, 8 GB)</th></tr>
+  <tr><td>13-minute stand-up</td><td>13:17</td><td>2:25</td></tr>
+  <tr><td>26-minute stand-up</td><td>25:39</td><td>5:52</td></tr>
+</table>
+<p>In CPU mode, on an Intel Core i7-14700HX, processing takes about 1.5 times the length of the recording.
+Slower processors need more.</p>
+<p>The estimates (ETAs) improve with use: after every transcription the program records the real timings of
+your PC. On first use, if the Whisper model was not downloaded during installation, a few minutes of
+download are added.</p>
+
+<h2 id="data">10. Where the data is</h2>
+<table>
+  <tr><th>What</th><th>Where</th></tr>
+  <tr><td>Program</td><td>Windows: <code>%LOCALAPPDATA%\Programs\Neon Verbale</code><br>Linux: <code>~/.local/lib/neon-verbale</code></td></tr>
+  <tr><td>Voice library, glossary, timings, error log</td><td>Windows: <code>%LOCALAPPDATA%\Neon Verbale</code><br>Linux: <code>~/.local/share/neon-verbale</code></td></tr>
+  <tr><td>Downloaded Whisper models</td><td>the <code>modelli</code> subfolder of the data folder</td></tr>
+  <tr><td>Transcripts</td><td><code>Trascrizioni</code> folder next to each video</td></tr>
+</table>
+<p>On Windows, to open one of these folders paste the path in File Explorer's address bar.</p>
+
+<h2 id="privacy">11. Privacy</h2>
+<p>Audio, video, transcripts and voiceprints stay on your PC. The program connects to the Internet only to
+download its components (during installation, or at first use if you skipped the model download). The
+voice library contains voiceprints, which are personal data: do not share it without the consent of the
+people concerned.</p>
+
+<h2 id="troubleshooting">12. Troubleshooting</h2>
+<h3>Installing the components fails</h3>
+<p>Check the connection and retry from <strong>Start → Neon Verbale → Ripara componenti</strong> (on Linux:
+<code>neon-verbale --ripara</code>). The error details are in <code>install.log</code>, in the program
+folder. Behind an authenticated corporate proxy, ask IT to allow <code>pypi.org</code>,
+<code>files.pythonhosted.org</code>, <code>download.pytorch.org</code> and <code>huggingface.co</code>.</p>
+<h3>I have an NVIDIA GPU but the program uses the CPU</h3>
+<p>The card must be Turing or newer, with at least 4 GB of memory and driver 570 or later. Update the
+driver from <a href="https://www.nvidia.com/drivers">nvidia.com/drivers</a>, then run
+<strong>Ripara componenti</strong>: it installs the GPU build if the card is now suitable.</p>
+<h3>No names, only "Speaker 1", "Speaker 2"</h3>
+<p>The video is not a Teams recording, or nobody was highlighted while speaking. Fix the names in
+<code>speakers.json</code> (section 7): from the next time, the voice library will recognise them.</p>
+<h3>One person was split into two voices, or two people were merged</h3>
+<p>In the first case give both voices the same name in <code>speakers.json</code>. In the second, with the
+<a href="#command-line">command line</a> you can give the number of participants with
+<code>--num-speakers</code>.</p>
+<h3>Some technical words are spelt wrong</h3>
+<p>Add them to the <a href="#glossary">glossary</a> and process the video again from the command line with
+<code>--redo asr</code>.</p>
+<h3>The program does not open</h3>
+<p>Look at <code>gui.log</code> in the data folder (section 10) and run <strong>Ripara componenti</strong>.</p>
+
+<h2 id="command-line">13. Command line (for power users)</h2>
+<p>On Windows, from a PowerShell terminal in the program folder:</p>
+<pre>cd "$env:LOCALAPPDATA\Programs\Neon Verbale"
+.\runtime\python.exe -m meeting_transcriber "C:\path\meeting.mp4"
+.\runtime\python.exe -m meeting_transcriber --help</pre>
+<p>On Linux: <code>neon-verbale --trascrivi meeting.mp4</code> (and <code>neon-verbale --trascrivi --help</code>).</p>
+<table>
+  <tr><th>Option</th><th>What it does</th></tr>
+  <tr><td><code>--num-speakers N</code></td><td>exact number of participants (also <code>--min-speakers</code>, <code>--max-speakers</code>)</td></tr>
+  <tr><td><code>--redo asr</code></td><td>redoes the transcription (for example after changing the glossary); also <code>video</code>, <code>diarization</code>, <code>names</code>, <code>all</code></td></tr>
+  <tr><td><code>--model large-v3-turbo</code></td><td>a Whisper model other than the one chosen automatically</td></tr>
+  <tr><td><code>--cpu</code></td><td>do not use the GPU</td></tr>
+  <tr><td><code>--out FOLDER</code></td><td>save the results somewhere else</td></tr>
+  <tr><td><code>--language en</code></td><td>meetings in another language</td></tr>
+</table>
+
+<h2 id="uninstall">14. Uninstalling</h2>
+<p>On Windows: <strong>Settings → Apps → Installed apps → Neon Verbale → Uninstall</strong>, or
+<strong>Start → Neon Verbale → Disinstalla</strong>. You are asked whether to delete the downloaded models and
+the voice library too; the transcripts next to the videos stay where they are.</p>
+<p>On Linux: <code>neon-verbale --disinstalla</code>, or right click on the icon in the applications menu →
+<em>Disinstalla Neon Verbale</em>. Here too you are asked whether to delete models and voice library.</p>
+
+<h2 id="licenses">15. Licences</h2>
+<p>Neon Verbale is free software under the <strong>MIT No Attribution</strong> licence (MIT-0): you can use,
+copy, modify and redistribute it for any purpose, commercial included, with no obligations. Full text in
+<code>LICENSE.txt</code>, in the program folder.</p>
+<p>It relies on third-party open-source components, each with its own licence: Python (PSF), PyTorch (BSD),
+faster-whisper and CTranslate2 (MIT), OpenAI's Whisper models (MIT), pyannote.audio (MIT), the pyannote
+speaker-diarization-community-1 model (CC BY 4.0, © pyannoteAI, included unmodified), RapidOCR and OpenCV
+(Apache 2.0), PyAV with FFmpeg, sv-ttk and many others. The full list, with attributions, is in
+<code>THIRD-PARTY-NOTICES.txt</code>.</p>
+</main>
+<footer>
+  <div class="wrap">Neon Verbale 1.3.0 · MIT-0 licence · <a href="https://github.com/battles5/neon-verbale">github.com/battles5/neon-verbale</a></div>
+</footer>
+</body>
+</html>

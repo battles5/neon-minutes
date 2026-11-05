@@ -196,7 +196,7 @@ Actions=guida;disinstalla;
 
 [Desktop Action guida]
 Name=Guida
-Exec=xdg-open "{app}/docs/Guida.html"
+Exec=xdg-open "{app}/docs/Guide.html"
 
 [Desktop Action disinstalla]
 Name=Disinstalla Neon Verbale
@@ -419,7 +419,7 @@ def wizard(args, plan: Plan) -> int:
             if result["code"] == 0 and launch.get():
                 subprocess.Popen([str(BIN)], start_new_session=True)
             if result["code"] == 0 and guide.get():
-                subprocess.Popen(["xdg-open", str(APP_DIR / "docs" / "Guida.html")], start_new_session=True)
+                subprocess.Popen(["xdg-open", str(APP_DIR / "docs" / "Guide.html")], start_new_session=True)
             root.destroy()
 
     def start_install():

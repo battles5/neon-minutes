@@ -67,7 +67,7 @@ Source: "{#Stage}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs crea
 
 [Icons]
 Name: "{autoprograms}\{#AppName}\{#AppName}"; Filename: "{#AppExe}"; Parameters: "{#AppArgs}"; WorkingDir: "{app}"; IconFilename: "{app}\assets\piuma.ico"; Comment: "Trascrivi riunioni con i nomi di chi parla"
-Name: "{autoprograms}\{#AppName}\Guida"; Filename: "{app}\docs\Guida.html"
+Name: "{autoprograms}\{#AppName}\Guida"; Filename: "{app}\docs\Guide.html"
 Name: "{autoprograms}\{#AppName}\Ripara componenti"; Filename: "{app}\runtime\python.exe"; Parameters: "-u ""{app}\installer\postinstall.py"" --app ""{app}"" --variant auto --models"; WorkingDir: "{app}"; IconFilename: "{app}\assets\piuma.ico"; Comment: "Reinstalla PyTorch e le librerie (per esempio dopo aver cambiato scheda video o driver)"
 Name: "{autoprograms}\{#AppName}\Disinstalla"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#AppName}"; Filename: "{#AppExe}"; Parameters: "{#AppArgs}"; WorkingDir: "{app}"; IconFilename: "{app}\assets\piuma.ico"; Tasks: desktopicon
@@ -77,10 +77,12 @@ Name: "{autodesktop}\{#AppName}"; Filename: "{#AppExe}"; Parameters: "{#AppArgs}
 ; drop the shortcuts with the old name, the new ones are created below.
 Type: filesandordirs; Name: "{autoprograms}\Trascrittore riunioni"
 Type: files; Name: "{autodesktop}\Trascrittore riunioni.lnk"
+; The user guide was docs\Guida.html up to 1.3.0's English docs.
+Type: files; Name: "{app}\docs\Guida.html"
 
 [Run]
 Filename: "{#AppExe}"; Parameters: "{#AppArgs}"; WorkingDir: "{app}"; Description: "Avvia {#AppName}"; Flags: postinstall nowait skipifsilent; Check: ComponentsReady
-Filename: "{app}\docs\Guida.html"; Description: "Apri la guida"; Flags: postinstall shellexec skipifsilent unchecked
+Filename: "{app}\docs\Guide.html"; Description: "Apri la guida"; Flags: postinstall shellexec skipifsilent unchecked
 
 [UninstallDelete]
 ; Everything pip put in the bundled Python, caches and logs.
