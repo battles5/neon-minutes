@@ -233,24 +233,6 @@ begin
     Minutes(DownloadMB(), 200) + ' minuti a 200 Mbit/s. Durante l''installazione vedrai l''avanzamento e il tempo rimanente.';
 end;
 
-procedure InitializeWizard();
-begin
-  DetectHardware();
-  ProposeRenamedDir();
-  { A read-only memo rather than a label: the summary is filled in later (it depends on the }
-  { tasks chosen) and a label keeps the height it had when it was empty. }
-  HardwarePage := CreateCustomPage(wpSelectTasks, 'Verifica dell''hardware e spazio necessario',
-    'Cosa verrà installato, quanto verrà scaricato e quanto spazio servirà');
-  HardwareMemo := TNewMemo.Create(HardwarePage);
-  HardwareMemo.Parent := HardwarePage.Surface;
-  HardwareMemo.Align := alClient;
-  HardwareMemo.ReadOnly := True;
-  HardwareMemo.WordWrap := True;
-  HardwareMemo.ScrollBars := ssVertical;
-  ProgressPage := CreateOutputProgressPage('Installazione dei componenti',
-    'Scarico e installo PyTorch, le librerie e il modello Whisper. Puoi continuare a usare il PC.');
-end;
-
 { --- upgrade from an older name ------------------------------------------------------------- }
 
 const
@@ -292,8 +274,8 @@ begin
   if (Old = '') or not DirExists(Old) or DirExists(New) or (CompareText(Old, New) = 0) then
     Exit;
   if not RenameFile(Old, New) then begin
-    Result := 'Non riesco a spostare la versione installata da' + #13#10 + Old + #13#10 + 'a' + #13#10 + New +
-      #13#10#13#10 + 'Chiudi Neon Verbale (anche le trascrizioni in corso) e riprova.';
+    Result := 'Non riesco a spostare la versione installata da' + #13#10 + Old + #13#10 + 'a' + #13#10 + New
+      + #13#10#13#10 + 'Chiudi Neon Verbale (anche le trascrizioni in corso) e riprova.';
     Exit;
   end;
   Log('Installazione precedente spostata da ' + Old + ' a ' + New);
@@ -314,6 +296,24 @@ begin
     if FileExists(Dir + Names[I]) then
       CreateShellLink(Dir + Names[I], '{#AppName}', ExpandConstant('{#AppExe}'), '{#AppArgs}',
         ExpandConstant('{app}'), ExpandConstant('{app}\assets\piuma.ico'), 0, SW_SHOWNORMAL);
+end;
+
+procedure InitializeWizard();
+begin
+  DetectHardware();
+  ProposeRenamedDir();
+  { A read-only memo rather than a label: the summary is filled in later (it depends on the }
+  { tasks chosen) and a label keeps the height it had when it was empty. }
+  HardwarePage := CreateCustomPage(wpSelectTasks, 'Verifica dell''hardware e spazio necessario',
+    'Cosa verrà installato, quanto verrà scaricato e quanto spazio servirà');
+  HardwareMemo := TNewMemo.Create(HardwarePage);
+  HardwareMemo.Parent := HardwarePage.Surface;
+  HardwareMemo.Align := alClient;
+  HardwareMemo.ReadOnly := True;
+  HardwareMemo.WordWrap := True;
+  HardwareMemo.ScrollBars := ssVertical;
+  ProgressPage := CreateOutputProgressPage('Installazione dei componenti',
+    'Scarico e installo PyTorch, le librerie e il modello Whisper. Puoi continuare a usare il PC.');
 end;
 
 procedure CurPageChanged(CurPageID: Integer);
