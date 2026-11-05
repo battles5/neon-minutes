@@ -2,32 +2,45 @@
 
 Development checkout: everything next to the code. Installed copy (the installer writes
 install.json next to the package): code in the install folder, per-user data (voice
-library, ETA timings, glossary, settings, downloaded models) in
-%LOCALAPPDATA%\\Neon Verbale, which updates and uninstalls leave alone.
+library, ETA timings, glossary, settings, downloaded models) in %LOCALAPPDATA%\\Neon Verbale
+on Windows and $XDG_DATA_HOME/neon-verbale (~/.local/share/neon-verbale) on Linux, which
+updates and uninstalls leave alone.
 """
 
 import os
 import shutil
+import sys
 from pathlib import Path
 
 APP_NAME = "Neon Verbale"
-OLD_APP_NAME = "Trascrittore riunioni"  # name up to 1.1.0
+OLD_APP_NAME = "Trascrittore riunioni"  # name up to 1.1.0, Windows only
 APP_DIR = Path(__file__).resolve().parent.parent
 INSTALL_INFO = APP_DIR / "install.json"
 INSTALLED = INSTALL_INFO.exists()
-_USER_DATA = Path(os.environ.get("LOCALAPPDATA", Path.home()))
-DATA_DIR = _USER_DATA / APP_NAME if INSTALLED else APP_DIR
 
-if INSTALLED and not DATA_DIR.exists() and (_USER_DATA / OLD_APP_NAME).is_dir():
+
+def user_data_dir() -> Path:
+    """Per-user data folder of an installed copy (also used by the installers)."""
+    if sys.platform == "win32":
+        return Path(os.environ.get("LOCALAPPDATA", Path.home())) / APP_NAME
+    return Path(os.environ.get("XDG_DATA_HOME") or Path.home() / ".local" / "share") / "neon-verbale"
+
+
+DATA_DIR = user_data_dir() if INSTALLED else APP_DIR
+_OLD_DATA_DIR = DATA_DIR.parent / OLD_APP_NAME
+
+if INSTALLED and sys.platform == "win32" and not DATA_DIR.exists() and _OLD_DATA_DIR.is_dir():
     # First start after the rename: keep voices, glossary, timings and downloaded models.
     try:
-        (_USER_DATA / OLD_APP_NAME).rename(DATA_DIR)
+        _OLD_DATA_DIR.rename(DATA_DIR)
     except OSError:
         pass
+
 MODELS_DIR = DATA_DIR / "modelli"
 BUNDLED_PYANNOTE = APP_DIR / "models" / "pyannote-community-1"
 GUIDE = APP_DIR / "docs" / "Guida.html"
 ICON = APP_DIR / "assets" / "piuma.ico"
+ICON_PNG = APP_DIR / "assets" / "piuma.png"
 
 if INSTALLED:
     # Must be set before huggingface_hub is imported: it reads HF_HOME once.

@@ -22,13 +22,15 @@ from tkinter import filedialog, font, messagebox, ttk
 
 from . import hardware, theme
 from .diarize import available as diarization_available
-from .paths import DATA_DIR, GUIDE, ICON, glossary_path, setup_environment
+from .paths import DATA_DIR, GUIDE, ICON, ICON_PNG, glossary_path, setup_environment
 from .pipeline import Options, Reporter, default_out_root, expected_seconds, plan, process
 from .voices import VoiceLibrary
 
+_EXTENSIONS = ("mp4", "mkv", "mov", "avi", "webm", "m4a", "mp3", "wav", "ogg")
 FILE_TYPES = [
-    ("Registrazioni", "*.mp4 *.mkv *.mov *.avi *.webm *.m4a *.mp3 *.wav *.ogg"),
-    ("Tutti i file", "*.*"),
+    # The Linux file dialog matches patterns case-sensitively: list both cases.
+    ("Registrazioni", " ".join(f"*.{e} *.{e.upper()}" for e in _EXTENSIONS)),
+    ("Tutti i file", "*"),
 ]
 TICK_MS = 500
 
@@ -483,9 +485,11 @@ def main(files: list[str] | None = None):
             ctypes.windll.shcore.SetProcessDpiAwareness(1)
         except Exception:
             pass
-    root = tk.Tk()
+    root = tk.Tk(className="neon-verbale")  # WM_CLASS, matched by the Linux .desktop entry
     if ICON.exists() and sys.platform == "win32":
         root.iconbitmap(default=str(ICON))
+    elif ICON_PNG.exists():
+        root.iconphoto(True, tk.PhotoImage(file=str(ICON_PNG)))
     palette = theme.apply(root)
     app = App(root, palette)
     files = [f for f in (files if files is not None else sys.argv[1:]) if Path(f).is_file()]

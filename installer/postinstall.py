@@ -4,7 +4,7 @@
 
 1. PyTorch: the CUDA 12.8 build on a suitable NVIDIA GPU, otherwise the CPU build.
 2. The other dependencies, pinned to the versions this release was tested with.
-3. install.json, which switches the program to installed mode (data in %LOCALAPPDATA%).
+3. install.json, which switches the program to installed mode (per-user data folder).
 4. Optionally the Whisper model, so that the first transcription does not wait for it.
 5. A check that everything loads, including the bundled pyannote model.
 
@@ -38,6 +38,19 @@ MIN_VRAM_MB = 3584
 MIN_DRIVER = 570
 # Only weighs downloads against unpacking time for the progress bar; the ETA uses the measured speed.
 NOMINAL_SPEED = 8e6
+# No user site-packages and no PYTHON* variables: a Python already on the PC must not leak in
+# (on Windows the runtime's ._pth file already does this).
+PY = ["-s", "-E"]
+REPAIR_HINT = ("Start > Neon Verbale > Ripara componenti" if sys.platform == "win32"
+               else "il comando \"neon-verbale --ripara\"")
+
+
+def user_data_dir(app: Path) -> Path:
+    """Same folder as meeting_transcriber.paths.user_data_dir (only stdlib is needed to import it)."""
+    sys.path.insert(0, str(app))
+    from meeting_transcriber.paths import user_data_dir as data_dir
+
+    return data_dir()
 
 
 class Log:
@@ -186,7 +199,7 @@ def detect_variant() -> tuple[str, str]:
 
 def run_pip(args: list[str], progress: Progress, log: Log):
     """pip with machine-readable download progress ("Progress <done> of <total>")."""
-    cmd = [sys.executable, "-u", "-m", "pip", "install", "--disable-pip-version-check", "--no-warn-script-location",
+    cmd = [sys.executable, *PY, "-u", "-m", "pip", "install", "--disable-pip-version-check", "--no-warn-script-location",
            "--no-cache-dir", "--progress-bar", "raw", *args]
     log(" ".join(cmd))
     finished_files, current, last_total = 0, 0, None
@@ -313,11 +326,11 @@ def main() -> int:
         if args.models:
             progress.start(index)
             # install.json now exists, so meeting_transcriber.paths points HF_HOME at the data folder.
-            data = Path(os.environ.get("LOCALAPPDATA", Path.home())) / "Neon Verbale" / "modelli"
+            data = user_data_dir(app) / "modelli"
             watch = data / "hub" / ("models--" + WHISPER_REPOS[model].replace("/", "--"))
             # Plain HTTP instead of the Xet backend: it writes the file as it arrives, so its
             # growth is the download progress (Xet assembles the file only at the end).
-            run_quiet([sys.executable, "-X", "utf8", "-c",
+            run_quiet([sys.executable, *PY, "-X", "utf8", "-c",
                        f"from meeting_transcriber import asr; asr.download({model!r})"],
                       log, progress, cwd=app, watch=watch, env={"HF_HUB_DISABLE_XET": "1"})
             progress.finish(index)
@@ -325,7 +338,7 @@ def main() -> int:
 
         progress.start(index)
         progress.working()
-        out = run_quiet([sys.executable, "-X", "utf8", "-c",
+        out = run_quiet([sys.executable, *PY, "-X", "utf8", "-c",
                          "import av, cv2, faster_whisper, rapidocr_onnxruntime\n"
                          "from pyannote.audio import Pipeline\n"
                          "from meeting_transcriber import hardware, paths\n"
@@ -338,7 +351,7 @@ def main() -> int:
         if variant == "cuda" and "CPU" in description:
             log("ATTENZIONE: la GPU non risulta utilizzabile, il programma userà la CPU.")
             print("@@W|La GPU non risulta utilizzabile: il programma userà la CPU. Aggiorna il driver "
-                  "NVIDIA e poi usa Start > Neon Verbale > Ripara componenti.", flush=True)
+                  "NVIDIA e poi usa " + REPAIR_HINT + ".", flush=True)
         log("Installazione completata.")
         if not args.wizard:
             print("\n\nInstallazione completata.")
