@@ -33,6 +33,9 @@ FILE_TYPES = [
     ("Tutti i file", "*"),
 ]
 TICK_MS = 500
+# On Linux the bundled Tk draws with X core fonts: Latin-1 letters are there, these glyphs are not.
+DOTS = "…" if sys.platform == "win32" else "..."
+PLAY, REMOVE, BUTTON_WIDTH = ("▶", "✕", 3) if sys.platform == "win32" else ("Avvia", "Togli", 6)
 
 
 def _clock(seconds: float | None) -> str:
@@ -156,15 +159,15 @@ class App:
 
         top = ttk.Frame(root, padding=(12, 12, 12, 4))
         top.pack(fill="x")
-        ttk.Button(top, text="Aggiungi video…", command=self.pick).pack(side="left")
+        ttk.Button(top, text=f"Aggiungi video{DOTS}", command=self.pick).pack(side="left")
         self.start_btn = ttk.Button(top, text="Avvia tutti", command=self.start_all, state="disabled")
         self.start_btn.pack(side="left", padx=8)
         self.open_btn = ttk.Button(top, text="Apri cartella risultati", command=self.open_output, state="disabled")
         self.open_btn.pack(side="left")
         ttk.Button(top, text="Guida", command=lambda: self.open_file(GUIDE)).pack(side="right")
-        ttk.Button(top, text="Glossario…", command=lambda: self.open_file(glossary_path())).pack(side="right", padx=8)
+        ttk.Button(top, text=f"Glossario{DOTS}", command=lambda: self.open_file(glossary_path())).pack(side="right", padx=8)
 
-        self.hardware = ttk.Label(root, padding=(12, 2), foreground=palette["muted"], text="Verifica dell'hardware…")
+        self.hardware = ttk.Label(root, padding=(12, 2), foreground=palette["muted"], text=f"Verifica dell'hardware{DOTS}")
         self.hardware.pack(fill="x")
         self.prep.submit(lambda: self.q.put(("hardware", hardware.detect())))
         self.info = ttk.Label(root, padding=(12, 0), foreground=palette["muted"])
@@ -231,7 +234,7 @@ class App:
             child.destroy()
         self.rows = {}
         if not self.jobs:
-            ttk.Label(self.list_frame, text="Nessun video in coda: usa \"Aggiungi video…\".",
+            ttk.Label(self.list_frame, text=f"Nessun video in coda: usa \"Aggiungi video{DOTS}\".",
                       foreground=self.palette["muted"]).grid(row=0, column=0, sticky="w")
         for i, job in enumerate(self.jobs):
             name = ttk.Label(self.list_frame, text=job.path.name, width=40, anchor="w")
@@ -240,9 +243,9 @@ class App:
             bar.grid(row=i, column=1, sticky="ew", padx=10)
             status = ttk.Label(self.list_frame, width=34, anchor="w")
             status.grid(row=i, column=2, sticky="w")
-            play = ttk.Button(self.list_frame, text="▶", width=3, command=lambda j=job: self.start_one(j))
+            play = ttk.Button(self.list_frame, text=PLAY, width=BUTTON_WIDTH, command=lambda j=job: self.start_one(j))
             play.grid(row=i, column=3, padx=(6, 2))
-            remove = ttk.Button(self.list_frame, text="✕", width=3, command=lambda j=job: self.remove(j))
+            remove = ttk.Button(self.list_frame, text=REMOVE, width=BUTTON_WIDTH, command=lambda j=job: self.remove(j))
             remove.grid(row=i, column=4, padx=(2, 0))
             self.rows[job.id] = {"bar": bar, "status": status, "play": play, "remove": remove}
         self.refresh()
@@ -412,7 +415,7 @@ class App:
                 stage = STAGE_LABELS.get(job.stage, "avvio")
                 text = f"{stage} {job.fraction:.0%} · ETA {_clock(job.eta(speed))}"
             elif job.estimate is None:
-                text = "calcolo della stima…"
+                text = f"calcolo della stima{DOTS}"
             elif job.id in positions:
                 text = f"in coda ({positions[job.id]}°) · ETA {_clock(job.eta(speed))}"
             else:
@@ -441,7 +444,7 @@ class App:
         if not todo:
             self.total_label.configure(text=f"tutto fatto ({len(self.jobs)} video)")
         elif any(j.estimate is None for j in todo):
-            self.total_label.configure(text=f"{len(todo)} da fare · calcolo della stima…")
+            self.total_label.configure(text=f"{len(todo)} da fare · calcolo della stima{DOTS}")
         else:
             remaining = sum(j.eta(speed) or 0.0 for j in todo)
             self.total_label.configure(text=f"{len(todo)} da fare · ETA totale {_clock(remaining)}")

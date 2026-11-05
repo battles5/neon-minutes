@@ -71,6 +71,7 @@ jobs:
           from meeting_transcriber import gui, theme
           root = tk.Tk(className='neon-verbale')
           app = gui.App(root, theme.apply(root))
+          app.add_files([os.environ['RUNNER_TEMP'] + '/prova/riunione.wav'])
           root.geometry('+0+0')
           shot = lambda: subprocess.run(['import', '-window', 'root', os.environ['NEON_SMOKE_SHOTS'] + '/programma.png'])
           root.after(2500, shot)

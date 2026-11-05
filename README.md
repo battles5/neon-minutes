@@ -141,7 +141,8 @@ CPU anche con una GPU NVIDIA), `--no-models` (Whisper al primo uso), `--no-deskt
 2. **Aggiungi video…** e seleziona una o più registrazioni (mp4, mkv, mov, avi, webm, oppure
    solo audio: m4a, mp3, wav, ogg). Puoi aggiungerne altre in qualunque momento.
 3. **Avvia tutti**, oppure **▶** sulla riga di un singolo video. **✕** toglie un video dalla
-   lista. I video vengono elaborati uno alla volta, nell'ordine della coda.
+   lista. I video vengono elaborati uno alla volta, nell'ordine della coda. Su Linux i due
+   pulsanti delle righe si chiamano **Avvia** e **Togli**.
 
 I risultati vanno in una cartella `Trascrizioni` accanto ai video:
 

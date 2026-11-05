@@ -365,7 +365,7 @@ def wizard(args, plan: Plan) -> int:
         ttk.Label(f, text="Installazione dei componenti", style="Title.TLabel").pack(anchor="w")
         ttk.Label(f, text="Scarico e installo PyTorch, le librerie e il modello Whisper. Puoi continuare a usare il PC.",
                   style="Muted.TLabel").pack(anchor="w", pady=(2, 18))
-        f.first = ttk.Label(f, text="Copia del programma…")
+        f.first = ttk.Label(f, text="Copia del programma...")
         f.first.pack(anchor="w")
         f.second = ttk.Label(f, text="", style="Muted.TLabel")
         f.second.pack(anchor="w", pady=(2, 10))
