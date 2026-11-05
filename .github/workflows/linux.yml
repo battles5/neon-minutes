@@ -6,7 +6,6 @@ name: Installer Linux
 on:
   push:
     tags: ["v*"]
-    branches: ["linux-installer"]  # temporary, while the Linux installer is being developed
   workflow_dispatch:
 
 permissions:
