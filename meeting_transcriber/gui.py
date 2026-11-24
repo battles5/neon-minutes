@@ -6,6 +6,10 @@ start it (or move it to the front of the queue) and to remove it; "Start all" qu
 waiting recording. The total ETA covers everything still to do and is recomputed whenever the
 list changes. Results land in a "Trascrizioni" folder next to each recording. The interface
 language can be switched at any time (texts in i18n.py).
+
+Above the list: the participants (like the meeting language, for every recording not started
+yet), names from what people say on or off, and the results folder's name (the recording's, or
+date + title from the content); the last two are remembered.
 """
 
 import itertools
@@ -21,13 +25,13 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from tkinter import filedialog, font, messagebox, ttk
 
-from . import hardware, i18n, theme
+from . import __version__, hardware, i18n, theme
 from .diarize import available as diarization_available
 from .paths import DATA_DIR, GUIDE, ICON, ICON_PNG, glossary_path, setup_environment
 from .pipeline import Options, Reporter, default_out_root, expected_seconds, plan, process
 from .voices import VoiceLibrary
 
-_EXTENSIONS = ("mp4", "mkv", "mov", "avi", "webm", "m4a", "mp3", "wav", "ogg")
+_EXTENSIONS = ("mp4", "mkv", "mov", "avi", "webm", "m4a", "mp3", "wav", "ogg", "flac", "aac", "opus", "wma")
 # The Linux file dialog matches patterns case-sensitively: list both cases.
 _PATTERNS = " ".join(f"*.{e} *.{e.upper()}" for e in _EXTENSIONS)
 TICK_MS = 500
@@ -85,10 +89,11 @@ class _QueueReporter(Reporter):
 class Job:
     _ids = itertools.count(1)
 
-    def __init__(self, path: Path, language: str):
+    def __init__(self, path: Path, language: str, participants: str = ""):
         self.id = next(Job._ids)
         self.path = path
         self.language = language  # meeting language, "auto" to let Whisper detect it
+        self.participants = participants  # as typed: names separated by commas
         self.estimate: float | None = None  # expected seconds, computed in the background
         self.queued = False  # in the run queue, waiting for its turn
         self.taken = False  # picked up by the worker thread
@@ -140,9 +145,9 @@ class App:
         # sequence (two threads loading the CUDA libraries at once can deadlock).
         self.prep = ThreadPoolExecutor(max_workers=1)
 
-        root.title("Neon Minutes")
-        root.geometry("920x640")
-        root.minsize(700, 460)
+        root.title(f"Neon Minutes {__version__}")
+        root.geometry("940x720")
+        root.minsize(720, 540)
         root.protocol("WM_DELETE_WINDOW", self.on_close)
         bold = font.nametofont("TkDefaultFont").copy()
         bold.configure(weight="bold")
@@ -177,6 +182,30 @@ class App:
         self.meeting_hint = ttk.Label(root, padding=(12, 0), foreground=palette["muted"])
         self.meeting_hint.pack(fill="x")
         self.meeting_language = i18n.meeting_language()
+
+        # Participants (for the recordings not started yet), names from content, folder name.
+        people = ttk.Frame(root, padding=(12, 6, 12, 0))
+        people.pack(fill="x")
+        self.participants_label = ttk.Label(people)
+        self.participants_label.pack(side="left")
+        self.participants_var = tk.StringVar()
+        self.participants_entry = ttk.Entry(people, textvariable=self.participants_var)
+        self.participants_entry.pack(side="left", fill="x", expand=True, padx=(6, 0))
+        self.participants_var.trace_add("write", lambda *_: self.on_participants())
+        self.participants_hint = ttk.Label(root, padding=(12, 0), foreground=palette["muted"], wraplength=900)
+        self.participants_hint.pack(fill="x")
+        choices = ttk.Frame(root, padding=(12, 4, 12, 2))
+        choices.pack(fill="x")
+        self.content_names = i18n.setting("content_names", True)
+        self.title_folder = i18n.setting("title_folder", False)
+        self.content_var = tk.BooleanVar(value=self.content_names)
+        self.content_check = ttk.Checkbutton(choices, variable=self.content_var, command=self.on_choices)
+        self.content_check.pack(side="left")
+        self.folder_box = ttk.Combobox(choices, state="readonly", width=30)
+        self.folder_box.pack(side="right")
+        self.folder_box.bind("<<ComboboxSelected>>", lambda e: self.on_choices())
+        self.folder_label = ttk.Label(choices)
+        self.folder_label.pack(side="right", padx=(0, 6))
 
         self.profile = None
         self.hardware = ttk.Label(root, padding=(12, 2), foreground=palette["muted"])
@@ -230,6 +259,12 @@ class App:
         self.meeting_box.current(i18n.MEETING_LANGUAGES.index(self.meeting_language))
         self.meeting_hint.configure(text=t("meeting_language_hint"))
         self.ui_label.configure(text=t("ui_language") + ":")
+        self.participants_label.configure(text=t("participants") + ":")
+        self.participants_hint.configure(text=t("participants_hint"))
+        self.content_check.configure(text=t("content_names"))
+        self.folder_label.configure(text=t("folder_name") + ":")
+        self.folder_box.configure(values=[t("folder_file"), t("folder_title")])
+        self.folder_box.current(1 if self.title_folder else 0)
         self.hardware.configure(text=self.profile.description if self.profile else t("checking_hardware"))
         if self.warning is not None:
             self.warning.configure(text=t("no_pyannote_banner"))
@@ -254,7 +289,33 @@ class App:
             if row:
                 row["language"].current(i18n.MEETING_LANGUAGES.index(job.language))
             job.estimate = None  # a cached transcript counts only for the same language
-            self.prep.submit(self.estimate, job.id, job.path, job.language)
+            self.prep.submit(self.estimate, job.id, job)
+        self.refresh()
+
+    def options(self, job: Job) -> Options:
+        """Also called from the worker threads: plain attributes, not Tk variables."""
+        return Options(language=job.language, participants=[job.participants] if job.participants else [],
+                       content_names=self.content_names, title_folder=self.title_folder)
+
+    def waiting_jobs(self) -> list[Job]:
+        with self.cond:
+            return [j for j in self.jobs if not (j.taken or j.finished or j.error)]
+
+    def on_participants(self):
+        """Like the meeting language: for the recordings added next and every one not started yet."""
+        text = self.participants_var.get().strip()
+        for job in self.waiting_jobs():
+            job.participants = text
+
+    def on_choices(self):
+        """Names from content and folder name are remembered and change the waiting recordings' ETA."""
+        self.content_names = bool(self.content_var.get())
+        self.title_folder = self.folder_box.current() == 1
+        i18n.set_setting("content_names", self.content_names)
+        i18n.set_setting("title_folder", self.title_folder)
+        for job in self.waiting_jobs():
+            job.estimate = None
+            self.prep.submit(self.estimate, job.id, job)
         self.refresh()
 
     def on_row_language(self, job: Job, box: ttk.Combobox):
@@ -263,7 +324,7 @@ class App:
                 return
             job.language = i18n.MEETING_LANGUAGES[box.current()]
         job.estimate = None
-        self.prep.submit(self.estimate, job.id, job.path, job.language)
+        self.prep.submit(self.estimate, job.id, job)
         self.refresh()
 
     # --- list of recordings ---------------------------------------------------------
@@ -337,10 +398,10 @@ class App:
                 continue  # already waiting, queued or running
             if old:
                 self.jobs.remove(old)  # done before: add it again as new
-            job = Job(path, self.meeting_language)
+            job = Job(path, self.meeting_language, self.participants_var.get().strip())
             self.jobs.append(job)
             added.append(job)
-            self.prep.submit(self.estimate, job.id, path, job.language)
+            self.prep.submit(self.estimate, job.id, job)
         if not added:
             return
         if self.auto:
@@ -352,10 +413,10 @@ class App:
         folders = sorted({str(default_out_root(j.path)) for j in self.jobs})
         self.info.configure(text=t("results_in", folders="; ".join(folders)) if folders else "")
 
-    def estimate(self, job_id: int, path: Path, language: str):
+    def estimate(self, job_id: int, job: Job):
         """Background: expected seconds for one file, or the reason it cannot be read."""
         try:
-            result = expected_seconds(plan(path, Options(language=language), None, self.token))
+            result = expected_seconds(plan(job.path, self.options(job), None, self.token))
         except Exception as exc:
             result = exc
         self.q.put(("estimate", job_id, result))
@@ -405,7 +466,7 @@ class App:
                 library = VoiceLibrary(DATA_DIR / "voices.json")
             self.q.put(("start", job.id))
             try:
-                output = process(job.path, Options(language=job.language), self.token, library,
+                output = process(job.path, self.options(job), self.token, library,
                                  report=_QueueReporter(self.q, job.id))
                 self.q.put(("done", job.id, output))
             except Exception as exc:

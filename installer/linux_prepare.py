@@ -21,7 +21,8 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from prepare_stage import WHISPER_FILES, WHISPER_REPOS, _dir_size, stage_requirements, write_notices  # noqa: E402
+from prepare_stage import (WHISPER_FILES, WHISPER_REPOS, _dir_size, lm_bytes, stage_requirements,  # noqa: E402
+                           write_notices)
 
 CUDA_UNPACK = 1.6
 TORCH_INDEX = {"cuda": "https://download.pytorch.org/whl/cu128", "cpu": "https://download.pytorch.org/whl/cpu"}
@@ -67,7 +68,7 @@ def write_sizes(installer_dir: Path, payload: Path):
     base = _dir_size(payload)
     installed = {"cpu": int(base + others + torch_dirs), "cuda": int(base + others + torch["cuda"] * CUDA_UNPACK)}
     sizes = {
-        "download": {"torch": torch, "deps": deps, "whisper": whisper},
+        "download": {"torch": torch, "deps": deps, "whisper": whisper, "lm": lm_bytes()},
         "installed": installed,
         "install_seconds": {"torch": {"cuda": 120, "cpu": 30}, "deps": 150, "check": 50},
     }

@@ -20,3 +20,6 @@ Trascrizioni/
 
 # Scelte della finestra (lingue)
 settings.json
+
+# Modelli scaricati in una copia di sviluppo (modello linguistico)
+modelli/

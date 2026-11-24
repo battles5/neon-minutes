@@ -141,7 +141,7 @@ def write_sizes(installer_dir: Path, stage: Path):
     base = _dir_size(stage)  # runtime + program + pyannote model
     installed = {v: int(base + others + torch[v] * unpack_ratio) for v in ("cuda", "cpu")}
     sizes = {
-        "download": {"torch": torch, "deps": deps, "whisper": whisper},
+        "download": {"torch": torch, "deps": deps, "whisper": whisper, "lm": lm_bytes()},
         "installed": installed,
         # Unpacking times measured on a test install (antivirus scanning included).
         "install_seconds": {"torch": {"cuda": 160, "cpu": 30}, "deps": 260, "check": 50},
@@ -150,6 +150,14 @@ def write_sizes(installer_dir: Path, stage: Path):
     mb = lambda b: f"{b / 1e6:,.0f} MB"
     print(f"download: torch {mb(torch['cuda'])} / {mb(torch['cpu'])}, librerie {mb(deps)}, "
           f"whisper {mb(whisper['cuda'])} / {mb(whisper['cpu'])}; installato {mb(installed['cuda'])} / {mb(installed['cpu'])}")
+
+
+def lm_bytes() -> int:
+    """The language model's size, from the table of its release files in meeting_transcriber/lm.py."""
+    sys.path.insert(0, str(ROOT))
+    from meeting_transcriber.lm import MODEL_BYTES
+
+    return MODEL_BYTES
 
 
 def main():

@@ -5,7 +5,8 @@
 1. PyTorch: the CUDA 12.8 build on a suitable NVIDIA GPU, otherwise the CPU build.
 2. The other dependencies, pinned to the versions this release was tested with.
 3. install.json, which switches the program to installed mode (per-user data folder).
-4. Optionally the Whisper model, so that the first transcription does not wait for it.
+4. Optionally the models (Whisper, and the language model that names voices from what people say
+   and writes titles), so that the first transcription does not wait for them.
 5. A check that everything loads, including the bundled pyannote model.
 
 With --wizard, progress goes to stdout as lines the setup's progress page understands:
@@ -308,6 +309,9 @@ def main() -> int:
         if args.models:
             steps.append({"title": f"Modello Whisper {model}", "bytes": sizes["download"]["whisper"][variant],
                           "seconds": 5, "working": "verifica del modello"})
+            steps.append({"title": "Modello linguistico (nomi da quello che si dice, titoli)",
+                          "bytes": sizes["download"].get("lm", 4_040_000_000), "seconds": 5,
+                          "working": "verifica del modello"})
         steps.append({"title": "Verifica finale", "bytes": 0, "seconds": seconds["check"],
                       "working": "controllo che tutto si carichi"})
         progress = Progress(steps, args.wizard, log)
@@ -337,6 +341,14 @@ def main() -> int:
             run_quiet([sys.executable, *PY, "-X", "utf8", "-c",
                        f"from meeting_transcriber import asr; asr.download({model!r})"],
                       log, progress, cwd=app, watch=watch, env={"HF_HUB_DISABLE_XET": "1"})
+            progress.finish(index)
+            index += 1
+
+            progress.start(index)
+            # Downloaded into "<model>.download" and renamed when complete and checked.
+            watch = data / "qwen3-4b-ct2-int8.download"
+            run_quiet([sys.executable, *PY, "-X", "utf8", "-c", "from meeting_transcriber import lm; lm.download()"],
+                      log, progress, cwd=app, watch=watch)
             progress.finish(index)
             index += 1
 

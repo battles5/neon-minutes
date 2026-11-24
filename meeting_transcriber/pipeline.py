@@ -6,6 +6,7 @@ or what Options.redo asks for, so editing a name in speakers.json and re-running
 regenerates the transcript in seconds.
 """
 
+import gc
 import json
 import re
 import threading
@@ -17,7 +18,7 @@ from pathlib import Path
 
 import av
 
-from . import hardware, i18n, naming
+from . import content_names, hardware, i18n, lm, naming, titles
 from .asr import build_prompt, is_model_cached, transcribe
 from .audio import load_audio
 from .diarize import available as diarization_available
@@ -30,19 +31,28 @@ from .voices import VoiceLibrary
 tr = i18n.t
 
 OUTPUT_DIR_NAME = "Trascrizioni"
-STAGES = ("video", "diarization", "asr", "names")
+STAGES = ("video", "diarization", "asr", "content", "names")
 # Seconds of work per second of recording, plus model loading. GPU figures measured on an
 # RTX 2000 Ada laptop, CPU ones on an i7-14700HX. Used for ETAs; every run refines them in
 # timings.json, since Whisper's speed varies with the audio and with the GPU's clocks.
+# "content" is the language model reading the transcript for names, "title" for the folder name.
 RATE = {
-    "cuda": {"audio": 0.004, "video": 0.037, "diarization": 0.06, "asr": 0.15},
-    "cpu": {"audio": 0.004, "video": 0.05, "diarization": 0.65, "asr": 0.8},
+    "cuda": {"audio": 0.004, "video": 0.037, "diarization": 0.06, "asr": 0.15, "content": 0.002, "title": 0.0},
+    "cpu": {"audio": 0.004, "video": 0.05, "diarization": 0.65, "asr": 0.8, "content": 0.06, "title": 0.0},
 }
-OVERHEAD_S = {"audio": 1.0, "video": 2.0, "diarization": 10.0, "asr": 8.0}
+OVERHEAD_S = {"audio": 1.0, "video": 2.0, "diarization": 10.0, "asr": 8.0, "content": 10.0, "title": 5.0}
+CPU_OVERHEAD_S = {"content": 20.0, "title": 40.0}
 FINISH_S = 2.0
 MODEL_DOWNLOAD_S = 180.0  # first run only: Whisper weights are 1.6-3 GB
+LM_DOWNLOAD_S = 240.0  # first run only: the language model is 4 GB
+# Voices that speak less than this are not worth reading the transcript for.
+CONTENT_MIN_SPEECH_S = 20.0
 TIMINGS_PATH = DATA_DIR / "timings.json"
 _timings_lock = threading.Lock()
+
+
+def _overhead(device: str, stage: str) -> float:
+    return CPU_OVERHEAD_S.get(stage, OVERHEAD_S[stage]) if device == "cpu" else OVERHEAD_S[stage]
 
 
 def _rates(device: str) -> dict[str, float]:
@@ -66,7 +76,7 @@ def _record_rate(device: str, stage: str, seconds: float, duration: float):
         except (OSError, ValueError, AttributeError):
             stored = {}
         rates = _rates(device)
-        measured = max(seconds - OVERHEAD_S[stage], 0.0) / duration
+        measured = max(seconds - _overhead(device, stage), 0.0) / duration
         rates[stage] = round((rates[stage] + measured) / 2, 4)
         stored[device] = rates
         TIMINGS_PATH.write_text(json.dumps(stored, indent=1), encoding="utf-8")
@@ -94,6 +104,9 @@ class Options:
     redo: set[str] = field(default_factory=set)
     device: str | None = None
     compute_type: str | None = None
+    participants: list[str] = field(default_factory=list)  # full names, e.g. from the invitation
+    content_names: bool = True  # name voices from what people say (language model)
+    title_folder: bool = False  # results folder "<date> <title from the content>"
 
     def resolved(self) -> "Options":
         if self.device == "cpu" and not (self.model and self.compute_type):
@@ -123,7 +136,36 @@ def default_out_root(video: Path) -> Path:
 
 
 def meeting_dir(video: Path, out_root: Path | None) -> Path:
-    return (out_root or default_out_root(video)) / video.stem
+    """<out_root>/<video name>, or the folder that was renamed after the meeting's title."""
+    root = out_root or default_out_root(video)
+    plain = root / video.stem
+    if plain.exists() or not root.is_dir():
+        return plain
+    for marker in root.glob("*/_lavoro/source.json"):
+        try:
+            if _read_json(marker).get("file") == video.name:
+                return marker.parent.parent
+        except (OSError, ValueError):
+            pass
+    return plain
+
+
+def _titled_name(title: str, meta: dict, video: Path) -> str:
+    """'2026-03-12 Budget review': the meeting's date (from the Teams file name, else the file's)."""
+    try:
+        when = datetime.strptime(meta["date"], "%d/%m/%Y %H:%M") if meta.get("date") else None
+    except ValueError:
+        when = None
+    when = when or datetime.fromtimestamp(video.stat().st_mtime)
+    return f"{when:%Y-%m-%d} {title}"
+
+
+def _participants_list(text) -> list[str]:
+    """Names from a comma, semicolon or line separated text (an invitation's list pasted as is)."""
+    if isinstance(text, (list, tuple)):
+        text = ",".join(text)
+    names = [re.sub(r"\s*<[^>]*>\s*|\([^)]*\)", " ", n).strip(" .\t") for n in re.split(r"[,;\n]+", text or "")]
+    return list(dict.fromkeys(" ".join(n.split()) for n in names if len(n.split()) >= 1 and len(n) > 1))
 
 
 def media_duration(path: Path) -> float:
@@ -202,17 +244,29 @@ def plan(video: Path, opts: Options, out_root: Path | None, token: str | None) -
         "asr": "asr" in redo or not _asr_cached(work / "asr.json", opts.language),
     }
     needed["audio"] = needed["diarization"] or needed["asr"]
+    # Names from content are expected for recordings without Teams labels to read (with a video,
+    # usually every voice is named by it and the language model is not needed).
+    from_video = opts.use_video and (has_video(video) or (work / "labels.json").exists())
+    voices = (work / "diarization.json").exists() or diarization_available(token)
+    needed["content"] = (opts.content_names and voices and not from_video
+                         and ("content" in redo or needed["asr"] or needed["diarization"]
+                              or not (work / "content.json").exists()))
+    needed["title"] = opts.title_folder and not (work / "title.json").exists()
     rates = _rates(opts.device)
-    stages = {s: rates[s] * duration + OVERHEAD_S[s] for s, need in needed.items() if need}
+    stages = {s: rates[s] * duration + _overhead(opts.device, s) for s, need in needed.items() if need}
     if "asr" in stages and not is_model_cached(opts.model):
         stages["asr"] += MODEL_DOWNLOAD_S
+    first_lm = next((s for s in ("content", "title") if s in stages), None)
+    if first_lm and not lm.is_installed():
+        stages[first_lm] += LM_DOWNLOAD_S
     return stages
 
 
 def expected_seconds(stages: dict[str, float]) -> float:
     """The video scan runs alongside the diarization, so only the longer of the two counts."""
     parallel = max(stages.get("video", 0.0), stages.get("diarization", 0.0))
-    return stages.get("audio", 0.0) + parallel + stages.get("asr", 0.0) + FINISH_S
+    serial = sum(stages.get(s, 0.0) for s in ("audio", "asr", "content", "title"))
+    return serial + parallel + FINISH_S
 
 
 class _Progress:
@@ -232,7 +286,8 @@ class _Progress:
         with self.lock:
             self.done[name] = max(self.done.get(name, 0.0), min(fraction, 1.0))
             sec = {s: self.stages.get(s, 0.0) * self.done.get(s, 0.0) for s in OVERHEAD_S}
-            elapsed = sec["audio"] + max(sec["video"], sec["diarization"]) + sec["asr"]
+            elapsed = (sec["audio"] + max(sec["video"], sec["diarization"]) + sec["asr"]
+                       + sec["content"] + sec["title"])
             running = [s for s in ("video", "diarization") if s in self.done and self.done[s] < 1.0]
             stage = "parallel" if len(running) == 2 else name
             self.report.progress(min(elapsed / self.total, 0.99), stage)
@@ -254,8 +309,14 @@ def process(
     out_dir = meeting_dir(video, out_root)
     work = out_dir / "_lavoro"
     work.mkdir(parents=True, exist_ok=True)
+    _write_json(work / "source.json", {"file": video.name})  # finds the folder again once renamed
     redo = set(STAGES) if "all" in opts.redo else set(opts.redo)
-    paths = {s: work / f"{s}.json" for s in ("labels", "diarization", "asr")}
+    paths = {s: work / f"{s}.json" for s in ("labels", "diarization", "asr", "content", "title")}
+    participants = _participants_list(opts.participants)
+    if participants:
+        _write_json(work / "participants.json", participants)
+    elif (work / "participants.json").exists():
+        participants = _read_json(work / "participants.json")  # given at an earlier run
     speakers_path = out_dir / "speakers.json"
     progress = _Progress(plan(video, opts, out_root, token), report)
     duration = media_duration(video)
@@ -320,8 +381,9 @@ def process(
     names = naming.participants(roster)
     if names:
         log(tr("log_names", names=", ".join(names)))
-    elif opts.use_video:
+    elif opts.use_video and has_video(video):
         log(tr("log_no_labels"))
+    known = list(dict.fromkeys(names + participants))  # for Whisper's spelling and the content names
 
     if diarization is None:
         if not samples:
@@ -330,7 +392,7 @@ def process(
         diarization = turns_from_video(samples, roster, fps)
 
     if "asr" in progress.stages:
-        prompt = build_prompt(names, load_glossary(opts.glossary), opts.language)
+        prompt = build_prompt(known, load_glossary(opts.glossary), opts.language)
         wave = get_audio()
         downloading = not is_model_cached(opts.model)
         if downloading:
@@ -353,7 +415,8 @@ def process(
         asr = _read_json(paths["asr"])
 
     turns = diarization["turns"]
-    if speakers_path.exists() and not ("names" in redo or fresh & {"diarization"}):
+    saved = speakers_path.exists() and not ("names" in redo or fresh & {"diarization"})
+    if saved:
         speakers = _load_speakers(speakers_path)
         lag_s = _read_json(speakers_path).get("video_lag_s")
     elif diarization["model"] == "video-only":
@@ -369,6 +432,53 @@ def process(
         lag_s = video_names["lag_s"] if video_names else None
         if lag_s is not None:
             log(tr("log_lag", lag=f"{lag_s:+.2f}"))
+
+    # The language model: loaded at most once, for the names from content and for the title.
+    model = None
+    lm_error = None
+
+    def language_model(stage: str):
+        """The model, or None (logged once) when it cannot be downloaded or loaded."""
+        nonlocal model, lm_error
+        if model is None and lm_error is None:
+            try:
+                if not lm.is_installed():
+                    log(tr("log_lm_download", gb=f"{lm.MODEL_BYTES / 1e9:.1f}"))
+                    share = LM_DOWNLOAD_S / max(progress.stages.get(stage, LM_DOWNLOAD_S), 1.0)
+                    lm.download(lambda done, total: progress.update(stage, share * done / total))
+                device, compute_type = lm.choose_device(opts.device, opts.compute_type)
+                model = lm.LanguageModel(device=device, compute_type=compute_type)
+            except Exception as exc:  # no network, disk full...: the transcript is still worth having
+                lm_error = f"{type(exc).__name__}: {exc}"
+                log(tr("log_lm_failed", error=lm_error))
+        return model
+
+    # Names from what people say, for the voices nothing else could name.
+    open_voices = [c for c, info in speakers.items()
+                   if not info.get("source") and info["speech_s"] >= CONTENT_MIN_SPEECH_S]
+    run_content = (opts.content_names and diarization["model"] != "video-only" and open_voices
+                   and (not saved or "content" in progress.stages))
+    if run_content:
+        cache_key = {"participants": participants, "asr": asr.get("model"), "diarization": diarization["model"]}
+        cached = _read_json(paths["content"]) if paths["content"].exists() else None
+        if cached and cached.get("key") == cache_key and not ({"content", "asr", "diarization"} & (redo | fresh)):
+            assignment = cached["assignment"]
+        else:
+            assignment = None
+            t = time.time()
+            if language_model("content"):
+                log(tr("log_content", device=model.device))
+                raw = paragraphs(attribute_words(asr["segments"], turns), {c: c for c in speakers})
+                found = content_names.run(raw, model, known)
+                assignment = found["assignment"]
+                _write_json(paths["content"], {"key": cache_key, **found}, indent=1)
+                if model.device == opts.device:
+                    _record_rate(opts.device, "content", time.time() - t, duration)
+                log(tr("log_content_done", n=sum(1 for a in assignment.values() if a["sure"]),
+                       s=f"{time.time() - t:.0f}"))
+        progress.update("content", 1.0)
+        if assignment:
+            speakers = naming.add_content(speakers, assignment)
     _save_speakers(speakers_path, speakers, lag_s)
     for cluster, info in speakers.items():
         log(f"  {cluster}: {info['name']}  [{info.get('source') or '-'}, {info['speech_s']:.0f}s]")
@@ -383,7 +493,32 @@ def process(
     paras = paragraphs(attribute_words(asr["segments"], turns), names_by_cluster)
     meta.update(duration_s=round(duration, 1), source=str(video), asr_model=asr["model"],
                 diarization_model=diarization["model"], video_lag_s=lag_s)
+
+    # A title from the content: heading of the transcript and name of the results folder.
+    title = _read_json(paths["title"]).get("title") if paths["title"].exists() else None
+    if opts.title_folder and title is None:
+        if language_model("title"):
+            title = titles.meeting_title(model, paras, asr.get("language") or opts.language)
+            _write_json(paths["title"], {"title": title})
+            log(tr("log_title", title=title or "-"))
+        progress.update("title", 1.0)
+    if title:
+        meta.update(title=title, file_title=video.stem)
     outputs = write_outputs(out_dir, meta, speakers, paras)
+
+    if opts.title_folder and title and out_dir.name == video.stem:
+        name = _titled_name(title, meta, video)
+        target, n = out_dir.with_name(name), 2
+        while target.exists():
+            target, n = out_dir.with_name(f"{name} ({n})"), n + 1
+        try:
+            out_dir.rename(target)
+            outputs = [target / o.name for o in outputs]
+        except OSError as exc:  # a file of the folder is open in another program
+            log(tr("log_rename_failed", error=exc))
+    model = None  # frees the GPU memory before the next recording
+    gc.collect()
+
     report.progress(1.0, "fatto")
     log(tr("log_done", s=f"{time.time() - started:.0f}", path=outputs[0]))
     return outputs[0]

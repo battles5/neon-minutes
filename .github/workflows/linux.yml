@@ -36,6 +36,9 @@ jobs:
           .venv-build/bin/pip install -q "torch==$TORCH" "torchaudio==$TORCH" --index-url https://download.pytorch.org/whl/cpu
           .venv-build/bin/pip install -q -r requirements.txt -c installer/constraints.txt
 
+      - name: "Prova: nomi dal contenuto senza modello (logica e testi)"
+        run: .venv-build/bin/python tests/test_content_names.py
+
       - name: Modello pyannote (release "modelli-1")
         run: gh release download modelli-1 --repo "$GITHUB_REPOSITORY" -p 'pyannote-*.tar.gz' -D build/linux
 
@@ -82,6 +85,23 @@ jobs:
           cat "$RUNNER_TEMP/prova/Trascrizioni/meeting/trascrizione.md"
           grep -qiE "meeting|project|deadlines" "$RUNNER_TEMP/prova/Trascrizioni/meeting/trascrizione.md"
           grep -q '"language": "en"' "$RUNNER_TEMP/prova/Trascrizioni/meeting/_lavoro/asr.json"
+
+      - name: "Prova: solo audio, nome da quello che si dice e titolo della cartella (modello linguistico)"
+        run: |
+          export HOME="$RUNNER_TEMP/home"
+          # The setup downloaded the language model with Whisper (release "modelli-2").
+          test -f "$HOME/.local/share/neon-minutes/modelli/qwen3-4b-ct2-int8/model.bin"
+          espeak-ng -v it -s 140 -w "$RUNNER_TEMP/prova/presentazione.wav" \
+            "Buongiorno a tutti, sono Anna Neri e coordino il progetto di manutenzione. Oggi parliamo delle prossime scadenze e del budget dell'anno prossimo. Il primo lotto di lavori è stato completato a ottobre, con una spesa inferiore al previsto. Il secondo lotto partirà a marzo, dopo l'approvazione del consiglio. Vi chiedo di mandarmi le vostre osservazioni entro venerdì. Grazie a tutti, la riunione è finita."
+          "$HOME/.local/bin/neon-minutes" --trascrivi "$RUNNER_TEMP/prova/presentazione.wav" --no-voices
+          cat "$RUNNER_TEMP/prova/Trascrizioni/presentazione/speakers.json"
+          grep -q '"name": "Anna Neri"' "$RUNNER_TEMP/prova/Trascrizioni/presentazione/speakers.json"
+          grep -q '"source": "content"' "$RUNNER_TEMP/prova/Trascrizioni/presentazione/speakers.json"
+          # The English meeting again, now with a folder named after its content.
+          "$HOME/.local/bin/neon-minutes" --trascrivi "$RUNNER_TEMP/prova/meeting.wav" --no-voices --language auto --title-folder
+          ls "$RUNNER_TEMP/prova/Trascrizioni"
+          test ! -e "$RUNNER_TEMP/prova/Trascrizioni/meeting"
+          ls -d "$RUNNER_TEMP"/prova/Trascrizioni/20??-??-??\ */_lavoro/title.json
 
       - name: "Prova: finestra del programma e wizard (schermo virtuale)"
         run: |

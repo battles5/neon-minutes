@@ -7,9 +7,11 @@ label is lit no matter who talks, so plain co-occurrence would favour it; the
 contrast p_in - p_out does not.
 
 Voice evidence comes from the local voice library (voices.py) and is used for the
-clusters the video could not name.
+clusters the video could not name. Last come the names from what people say
+(content_names.py), for the clusters neither could name.
 """
 
+import re
 from collections import Counter
 from difflib import SequenceMatcher
 
@@ -199,4 +201,32 @@ def resolve(turns: list[dict], video: dict | None, voice_matches: dict[str, dict
         if voice:
             entry["voice"] = voice
         speakers[cluster] = entry
+    return speakers
+
+
+def add_content(speakers: dict, content: dict[str, dict]) -> dict:
+    """Names from what people say (content_names.assign) for the voices still without a name.
+
+    A name another voice already has is not given twice; a weaker guess becomes a hint. The
+    remaining "Speaker N" labels are renumbered in order of appearance.
+    """
+    taken = {info["name"] for info in speakers.values() if info.get("source")}
+    unnamed = 0
+    for cluster, info in speakers.items():
+        if info.get("source"):
+            continue
+        said = content.get(cluster)
+        old = info["name"]
+        if said and said["name"] not in taken:
+            info["content"] = said
+            if said["sure"]:
+                info.update(name=said["name"], source="content", confidence=said["score"])
+                taken.add(said["name"])
+        if info.get("source") != "content":
+            unnamed += 1
+            hint = re.search(r"\(forse: (.*)\)$", old)
+            hint = hint.group(1) if hint else (said or {}).get("name") if said and said["name"] not in taken else None
+            info["name"] = f"Speaker {unnamed} (forse: {hint})" if hint else f"Speaker {unnamed}"
+        if "auto" in info and info["name"] != old:
+            info["auto"] = info["name"]  # still an automatic name, not one the user typed
     return speakers

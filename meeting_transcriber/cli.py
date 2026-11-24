@@ -40,6 +40,13 @@ def main(argv=None):
     p.add_argument("--model", help="modello Whisper (default: large-v3 su GPU, large-v3-turbo su CPU)")
     p.add_argument("--language", default="it", help="lingua della riunione: it, en, es, fr, pt, zh, ... oppure auto (la riconosce Whisper)")
     p.add_argument("--glossary", nargs="*", default=[], help="termini da suggerire a Whisper (oltre a glossary.txt)")
+    p.add_argument("--participants", default="",
+                   help='partecipanti separati da virgole, per esempio "Anna Neri, Luca Bianchi": Whisper li scrive '
+                        "giusti e i nomi dal contenuto diventano nome e cognome")
+    p.add_argument("--no-content-names", action="store_true",
+                   help="non riconoscere chi parla da quello che dice (modello linguistico)")
+    p.add_argument("--title-folder", action="store_true",
+                   help='cartella dei risultati "<data> <titolo dal contenuto>" invece del nome del file')
     p.add_argument("--num-speakers", type=int)
     p.add_argument("--min-speakers", type=int)
     p.add_argument("--max-speakers", type=int)
@@ -55,7 +62,8 @@ def main(argv=None):
         model=args.model, language=args.language, glossary=args.glossary,
         num_speakers=args.num_speakers, min_speakers=args.min_speakers, max_speakers=args.max_speakers,
         video_fps=args.video_fps, use_video=not args.no_video, redo=set(args.redo),
-        device="cpu" if args.cpu else None,
+        device="cpu" if args.cpu else None, participants=[args.participants] if args.participants else [],
+        content_names=not args.no_content_names, title_folder=args.title_folder,
     )
     token = setup_environment()
     library = None if args.no_voices else VoiceLibrary(args.voices)

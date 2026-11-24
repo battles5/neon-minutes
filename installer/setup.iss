@@ -1,8 +1,8 @@
 ; Setup wizard of Neon Minutes. Built by installer\build_installer.ps1, which passes:
 ;   /DAppVersion=x.y.z  /DStage=<staging folder>  /O<output folder>
 ;   and the download/disk sizes measured at build time (MB): DlTorchCuda, DlTorchCpu, DlDeps,
-;   DlModelCuda, DlModelCpu, InstCuda, InstCpu
-; Per-user install (no admin rights). The heavy parts (PyTorch, Whisper) are downloaded at
+;   DlModelCuda, DlModelCpu, DlLm, InstCuda, InstCpu
+; Per-user install (no admin rights). The heavy parts (PyTorch, models) are downloaded at
 ; install time by installer\postinstall.py, in the variant that fits the PC's hardware, while
 ; a progress page shows the step, the amount downloaded and the time left.
 
@@ -18,6 +18,7 @@
   #define DlDeps "300"
   #define DlModelCuda "3100"
   #define DlModelCpu "1650"
+  #define DlLm "4040"
   #define InstCuda "5500"
   #define InstCpu "1300"
 #endif
@@ -60,7 +61,7 @@ Name: "it"; MessagesFile: "compiler:Languages\Italian.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "Crea un collegamento sul desktop"
-Name: "modelli"; Description: "Scarica subito il modello Whisper, così la prima trascrizione parte subito (consigliato)"
+Name: "modelli"; Description: "Scarica subito i modelli (Whisper e il modello linguistico che riconosce i nomi da quello che si dice), così la prima trascrizione parte subito (consigliato)"
 
 [Files]
 Source: "{#Stage}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
@@ -178,15 +179,15 @@ function DownloadMB(): Integer;
 begin
   if GpuVariant = 'cuda' then Result := {#DlTorchCuda} + {#DlDeps} else Result := {#DlTorchCpu} + {#DlDeps};
   if WizardIsTaskSelected('modelli') then
-    if GpuVariant = 'cuda' then Result := Result + {#DlModelCuda} else Result := Result + {#DlModelCpu};
+    if GpuVariant = 'cuda' then Result := Result + {#DlModelCuda} + {#DlLm} else Result := Result + {#DlModelCpu} + {#DlLm};
 end;
 
-{ Installed size, plus the model if downloaded now. }
+{ Installed size, plus the models if downloaded now. }
 function DiskMB(): Integer;
 begin
   if GpuVariant = 'cuda' then Result := {#InstCuda} else Result := {#InstCpu};
   if WizardIsTaskSelected('modelli') then
-    if GpuVariant = 'cuda' then Result := Result + {#DlModelCuda} else Result := Result + {#DlModelCpu};
+    if GpuVariant = 'cuda' then Result := Result + {#DlModelCuda} + {#DlLm} else Result := Result + {#DlModelCpu} + {#DlLm};
 end;
 
 { pip keeps the largest package in a temporary folder while it unpacks it. }
@@ -224,9 +225,11 @@ begin
     '  - PyTorch: ' + GB(Torch) + #13#10 +
     '  - altre librerie: ' + GB({#DlDeps}) + #13#10;
   if WizardIsTaskSelected('modelli') then
-    Result := Result + '  - modello Whisper: ' + GB(Model) + #13#10
+    Result := Result + '  - modello Whisper: ' + GB(Model) + #13#10 +
+      '  - modello linguistico (nomi da quello che si dice, titoli): ' + GB({#DlLm}) + #13#10
   else
-    Result := Result + '  - modello Whisper (' + GB(Model) + '): al primo utilizzo, perché non hai scelto di scaricarlo ora' + #13#10;
+    Result := Result + '  - modello Whisper (' + GB(Model) + ') e modello linguistico (' + GB({#DlLm}) +
+      '): al primo utilizzo, perché non hai scelto di scaricarli ora' + #13#10;
   Result := Result + #13#10 + 'SPAZIO SU DISCO: circa ' + GB(DiskMB()) + ' a installazione finita, ' +
     'fino a ' + GB(PeakDiskMB()) + ' durante l''installazione.' + #13#10#13#10 +
     'TEMPO INDICATIVO: circa ' + Minutes(DownloadMB(), 50) + ' minuti con una connessione da 50 Mbit/s, ' +
@@ -313,7 +316,7 @@ begin
   HardwareMemo.WordWrap := True;
   HardwareMemo.ScrollBars := ssVertical;
   ProgressPage := CreateOutputProgressPage('Installazione dei componenti',
-    'Scarico e installo PyTorch, le librerie e il modello Whisper. Puoi continuare a usare il PC.');
+    'Scarico e installo PyTorch, le librerie e i modelli. Puoi continuare a usare il PC.');
 end;
 
 procedure CurPageChanged(CurPageID: Integer);
@@ -436,7 +439,7 @@ begin
     DataDir := ExpandConstant('{localappdata}\Trascrittore riunioni');
   if DirExists(DataDir) and (SuppressibleMsgBox(
       'Eliminare anche i dati personali del programma?' + #13#10#13#10 +
-      '- modelli Whisper scaricati (fino a 3 GB)' + #13#10 +
+      '- modelli scaricati: Whisper e modello linguistico (fino a 7 GB)' + #13#10 +
       '- libreria delle voci riconosciute, glossario, impostazioni' + #13#10#13#10 +
       DataDir + #13#10#13#10 +
       'Le trascrizioni nelle cartelle "Trascrizioni" accanto ai video restano dove sono.',

@@ -1,5 +1,29 @@
 # Changelog
 
+## 1.6.0 — 2026-11-23
+
+- **Audio recordings with names**: for an audio file (a meeting recorded with the phone, for
+  example) or the voices a video cannot name, a language model that runs on the PC reads the
+  transcript and works out who is who from what people say: self-introductions ("sono Anna
+  Neri"), the floor given to someone ("Luca, a te la parola"), thanks to the previous speaker.
+  Voices it is not sure about get a hint, also by elimination. In `speakers.json` these names have
+  `"source": "content"`. Tested on a 100-minute audio-only meeting: the four main voices were named
+  correctly, two for sure and two as hints.
+- **Participants** field: the names from the invitation, separated by commas. Whisper spells them
+  right and a voice called by first name gets the full name. On the command line:
+  `--participants "Anna Neri, Luca Bianchi"`.
+- **Results folder named after the meeting** (optional): `2026-03-12 Kick-off with Acme`, with a
+  title the language model writes from the first minutes; it is also the transcript's heading.
+  On the command line: `--title-folder`.
+- The language model is Qwen3-4B (Apache 2.0), converted to CTranslate2 int8 (4 GB). The setups
+  download it together with Whisper ("Scarica subito i modelli"), otherwise it comes at first use.
+  It runs on the GPU with 6 GB of video memory or more (about 15 s for a 100-minute meeting), else
+  on the CPU (about 6 minutes).
+- "Add recordings…" instead of "Add videos…"; also flac, aac, opus and wma files.
+- The window's title shows the version (for example "Neon Minutes 1.6.0").
+- The Linux build on GitHub Actions also checks a speaker named from what is said and a folder
+  named after the meeting; the logic is tested without the model by `tests/test_content_names.py`.
+
 ## 1.5.1 — 2026-11-05
 
 - **Meeting language menu**: choosing a language now also changes every video in the list that has

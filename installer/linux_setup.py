@@ -62,11 +62,12 @@ class Plan:
     def download(self) -> int:
         d = self.sizes["download"]
         total = d["torch"][self.variant] + d["deps"]
-        return total + (d["whisper"][self.variant] if self.models else 0)
+        return total + (d["whisper"][self.variant] + d.get("lm", 0) if self.models else 0)
 
     @property
     def disk(self) -> int:
-        model = self.sizes["download"]["whisper"][self.variant] if self.models else 0
+        d = self.sizes["download"]
+        model = d["whisper"][self.variant] + d.get("lm", 0) if self.models else 0
         return self.sizes["installed"][self.variant] + model
 
     @property
@@ -107,8 +108,11 @@ class Plan:
             f"DA SCARICARE: circa {gb(self.download)}",
             f"  - PyTorch: {gb(d['torch'][self.variant])}",
             f"  - altre librerie: {gb(d['deps'])}",
-            f"  - modello Whisper: {gb(whisper)}" if self.models
-            else f"  - modello Whisper ({gb(whisper)}): al primo utilizzo",
+            *([f"  - modello Whisper: {gb(whisper)}",
+               f"  - modello linguistico (nomi da quello che si dice, titoli): {gb(d.get('lm', 0))}"]
+              if self.models else
+              [f"  - modello Whisper ({gb(whisper)}) e modello linguistico ({gb(d.get('lm', 0))}): "
+               "al primo utilizzo"]),
             "",
             f"SPAZIO SU DISCO: circa {gb(self.disk)} a installazione finita, fino a {gb(self.peak)} durante "
             "l'installazione.",
@@ -384,7 +388,8 @@ def wizard(args, plan: Plan) -> int:
                 summary.insert("end", "\n\nATTENZIONE: " + p)
             summary.configure(state="disabled")
 
-        ttk.Checkbutton(f, text="Scarica subito il modello Whisper (consigliato)", variable=models,
+        ttk.Checkbutton(f, text="Scarica subito i modelli: Whisper e il modello linguistico (consigliato)",
+                        variable=models,
                         command=refresh).pack(anchor="w")
         ttk.Checkbutton(f, text="Crea un collegamento sul desktop", variable=desktop).pack(anchor="w")
         f.refresh = refresh
@@ -393,7 +398,7 @@ def wizard(args, plan: Plan) -> int:
     def page_progress():
         f = ttk.Frame(body)
         ttk.Label(f, text="Installazione dei componenti", style="Title.TLabel").pack(anchor="w")
-        ttk.Label(f, text="Scarico e installo PyTorch, le librerie e il modello Whisper. Puoi continuare a usare il PC.",
+        ttk.Label(f, text="Scarico e installo PyTorch, le librerie e i modelli. Puoi continuare a usare il PC.",
                   style="Muted.TLabel").pack(anchor="w", pady=(2, 18))
         f.first = ttk.Label(f, text="Copia del programma...")
         f.first.pack(anchor="w")
@@ -557,7 +562,7 @@ def main() -> int:
     p.add_argument("--cli", action="store_true", help="installa da terminale, senza finestra")
     p.add_argument("-y", "--yes", action="store_true", help="non chiedere conferme")
     p.add_argument("--cpu", action="store_true", help="installa la versione per CPU anche se c'è una GPU NVIDIA")
-    p.add_argument("--no-models", action="store_true", help="non scaricare ora il modello Whisper")
+    p.add_argument("--no-models", action="store_true", help="non scaricare ora i modelli (Whisper e linguistico)")
     p.add_argument("--no-desktop", action="store_true", help="niente collegamento sul desktop")
     p.add_argument("--uninstall", action="store_true", help=argparse.SUPPRESS)
     p.add_argument("--remove-data", action="store_true", help=argparse.SUPPRESS)

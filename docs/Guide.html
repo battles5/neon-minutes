@@ -83,13 +83,14 @@ choose with the <strong>Interface</strong> menu at the top right. This guide use
 installers and the names of the result files are in Italian.</div>
 
 <h2 id="what">1. What it does</h2>
-<p>It takes the recording of a meeting (for example the <code>.mp4</code> from Microsoft Teams, or a screen
-recording) and produces:</p>
+<p>It takes the recording of a meeting (for example the <code>.mp4</code> from Microsoft Teams, a screen
+recording, or just the audio recorded with a phone) and produces:</p>
 <ul>
   <li>the <strong>transcript</strong>, split by speaker turn, in Italian, English, Spanish, French,
     Portuguese or Chinese, or in the language Whisper detects;</li>
   <li><strong>speaker separation</strong>: who said what;</li>
-  <li>the participants' <strong>names</strong>, when the Teams video shows them;</li>
+  <li>the participants' <strong>names</strong>, when the Teams video shows them or when the people in the
+    meeting say them ("I'm Anna", "Luca, over to you");</li>
   <li><strong>subtitles</strong> to use with the video.</li>
 </ul>
 <p>It works without accounts or cloud services: everything is processed on your computer.</p>
@@ -107,8 +108,9 @@ your recordings never leave your PC.</p>
   <tr><td>Driver</td><td>NVIDIA 570 or later</td><td>—</td></tr>
   <tr><td>Whisper model</td><td>large-v3 (the most accurate)</td><td>large-v3-turbo (almost as accurate, lighter)</td></tr>
   <tr><td>One hour of meeting</td><td>about 12-15 minutes</td><td>about 1.5 hours on a fast processor, 2-3 hours on an office laptop</td></tr>
-  <tr><td>Downloaded during installation</td><td>about 6 GB (Linux: 7.5 GB)</td><td>about 2 GB</td></tr>
-  <tr><td>Disk space</td><td>about 9 GB, up to 12 GB during installation (Linux: 11 GB, up to 15)</td><td>about 3 GB (Linux: 4 GB)</td></tr>
+  <tr><td>Language model (names from what is said, titles)</td><td>Qwen3-4B, 4 GB, on the GPU if it has 6 GB of memory or more</td><td>the same, on the CPU</td></tr>
+  <tr><td>Downloaded during installation</td><td>about 10 GB (Linux: 11.5 GB)</td><td>about 6 GB</td></tr>
+  <tr><td>Disk space</td><td>about 13 GB, up to 16 GB during installation (Linux: 15 GB, up to 19)</td><td>about 7 GB (Linux: 8 GB)</td></tr>
 </table>
 <p>In both cases: Windows 10 or 11 64-bit, or Linux x86_64 (glibc 2.28 or later), at least 8 GB of RAM
 (16 GB recommended) and an Internet connection <em>only during installation</em>. No administrator rights
@@ -124,8 +126,8 @@ installs the right build. Afterwards, the program picks GPU or CPU by itself at 
   <li>If <strong>"Windows protected your PC"</strong> appears: the program is not digitally signed.
     Choose <em>More info</em> and then <em>Run anyway</em>.</li>
   <li>Follow the wizard pages: licence, requirements, folder (the proposed one is fine), options.
-    Keep <em>Scarica subito il modello Whisper</em> (<em>download the Whisper model now</em>) ticked, so the
-    first transcription starts right away.</li>
+    Keep <em>Scarica subito i modelli</em> (<em>download the models now</em>: Whisper and the language model)
+    ticked, so the first transcription starts right away.</li>
   <li>Before installing, the <strong>hardware check and required space</strong> page tells you which graphics
     card it found, which build it will install, <strong>how much it will download</strong>, <strong>how much
     space it needs</strong> and how long it will take with your connection. The same figures are
@@ -170,7 +172,7 @@ You find <strong>Neon Minutes</strong> in the applications menu; in a terminal t
   <tr><td><code>neon-minutes --disinstalla</code></td><td>removes the program, asking whether to keep models and voice library (also from the menu: right click on the icon → Disinstalla)</td></tr>
 </table>
 <p>Installer options: <code>--cli</code> (terminal only), <code>-y</code> (no questions),
-<code>--cpu</code> (CPU build even with an NVIDIA GPU), <code>--no-models</code> (download Whisper at first use),
+<code>--cpu</code> (CPU build even with an NVIDIA GPU), <code>--no-models</code> (download the models at first use),
 <code>--no-desktop</code> (no desktop shortcut).</p>
 
 <h2 id="usage">4. How to use it</h2>
@@ -178,10 +180,20 @@ You find <strong>Neon Minutes</strong> in the applications menu; in a terminal t
   <li>Open <strong>Neon Minutes</strong> from the desktop or the Start/applications menu.</li>
   <li>Choose the <strong>Meeting language</strong>: Italian, English, Spanish, French, Portuguese, Chinese,
     or <em>Detect automatically</em> when you do not know it or it changes from meeting to meeting.</li>
-  <li>Click <strong>Add videos…</strong> and pick one or more recordings (you can select several at once
-    with <kbd>Ctrl</kbd> or <kbd>Shift</kbd>).</li>
+  <li>If you know who took part, paste the names in <strong>Participants</strong>, separated by commas (the
+    list from the invitation is fine, even with the e-mail addresses). It is optional.</li>
+  <li>Leave <strong>Recognise speakers from what they say</strong> ticked, and choose the
+    <strong>Results folder</strong> name: <em>name of the recording</em> or <em>date + title from the
+    content</em>.</li>
+  <li>Click <strong>Add recordings…</strong> and pick one or more videos or audio files (you can select
+    several at once with <kbd>Ctrl</kbd> or <kbd>Shift</kbd>).</li>
   <li>Click <strong>Start all</strong>, or <strong>▶</strong> on the row of a single video.</li>
 </ol>
+<p><strong>Participants.</strong> The names go to Whisper, which then spells them right, and they complete
+the names found in the conversation: if someone says "Marco, what do you think?" and the list has
+<em>Marco Rossi</em>, the voice that answers is called <em>Marco Rossi</em>. Like the meeting language, the
+list applies to every recording not started yet. It is remembered for each meeting (in its
+<code>_lavoro</code> folder), not between sessions.</p>
 <p><strong>The queue.</strong> You can add more videos at any time, even while one is being processed: the
 list has no limit and scrolls. Videos are processed one at a time (there is only one graphics card):</p>
 <ul>
@@ -211,8 +223,9 @@ can still be transcribed).</p>
 <p><strong>Shortcut:</strong> drop one or more videos on the quill icon on the desktop: the window opens with
 those files already in the list.</p>
 <p>Accepted formats: <code>mp4</code>, <code>mkv</code>, <code>mov</code>, <code>avi</code>, <code>webm</code>
-and audio-only files (<code>m4a</code>, <code>mp3</code>, <code>wav</code>, <code>ogg</code>). With audio-only
-files the voices are separated, but names cannot be read.</p>
+and audio-only files (<code>m4a</code>, <code>mp3</code>, <code>wav</code>, <code>ogg</code>, <code>flac</code>,
+<code>aac</code>, <code>opus</code>, <code>wma</code>). With audio-only files the voices are separated and the
+names come from what people say (<a href="#names">section 6</a>).</p>
 
 <h2 id="results">5. The results</h2>
 <p>A <code>Trascrizioni</code> folder is created next to the videos, with one subfolder per video:</p>
@@ -225,6 +238,11 @@ Trascrizioni\
     trascrizione.json   all the data, word by word with timestamps
     speakers.json       who is who: can be corrected by hand
     _lavoro\            intermediate results, used to regenerate quickly</pre>
+<p>With <em>date + title from the content</em> the meeting's folder is named, for example,
+<code>2026-03-12 Kick-off with Acme</code>: the date of the meeting (from the Teams file name, otherwise the
+file's date) and a short title the language model writes after reading the first minutes. The title is
+also the heading of <code>trascrizione.md</code>. Processing the recording again finds the folder under
+its new name. If a file of the folder is open in another program, the folder keeps its old name.</p>
 <p><code>trascrizione.md</code> is a plain text file (Markdown): it opens with Notepad, Word or any editor.
 Turns look like this:</p>
 <pre>**[00:04:52] Mario Rossi:** A questo proposito, riesci a mandarmi le specifiche entro venerdì?</pre>
@@ -239,12 +257,21 @@ Turns look like this:</p>
     "steal" other people's sentences.</li>
   <li>If the video is not enough, it uses the <strong>voice library</strong>: the voiceprints of people
     recognised in previous meetings. The library grows by itself with every meeting.</li>
+  <li>For the voices still without a name (all of them, in an audio recording) a <strong>language
+    model</strong> that runs on your PC reads the transcript. Every time a name is said, it looks at who
+    speaks before and after: "I'm Anna Neri" names the voice that is talking, "thanks, Luca" the one
+    that just spoke, "Paolo, what do you think?" the one that answers, "as Carla said" nobody. The clues
+    are added up and each name goes to one voice only, when they are clear enough
+    (<code>speakers.json</code> then says <code>"source": "content"</code>).</li>
   <li>When it is not sure, it writes <code>Speaker 2</code>, sometimes with a hint:
-    <code>Speaker 2 (forse: Mario Rossi)</code> (<em>forse</em> means <em>maybe</em>).</li>
+    <code>Speaker 2 (forse: Mario Rossi)</code> (<em>forse</em> means <em>maybe</em>). A hint can also come
+    by elimination: if two voices are left and the conversation shows that Carla and Paolo were there, and
+    the first voice talked about Carla, it is probably Paolo.</li>
 </ol>
 <div class="note">Names are read well from <strong>recordings made by Teams</strong>. In screen captures of
-the live Teams client the speaker is signalled differently: there the voice library and manual
-corrections do the job.</div>
+the live Teams client, and in audio recordings, names come from what people say, from the voice library
+and from manual corrections. Someone who never introduces themself and is never called by name stays a
+<code>Speaker</code>.</div>
 
 <h2 id="fix">7. Fixing a name</h2>
 <ol>
@@ -273,19 +300,22 @@ made after you change it.</p>
   <tr><th>Test recording</th><th>Length</th><th>GPU (RTX 2000 Ada, 8 GB)</th></tr>
   <tr><td>13-minute stand-up</td><td>13:17</td><td>2:25</td></tr>
   <tr><td>26-minute stand-up</td><td>25:39</td><td>5:52</td></tr>
+  <tr><td>100-minute meeting, audio only</td><td>1:39:41</td><td>about 20:00</td></tr>
 </table>
+<p>The language model takes about 15 seconds on the GPU for a 100-minute meeting, about 6 minutes on the CPU,
+plus a few seconds for the title.</p>
 <p>In CPU mode, on an Intel Core i7-14700HX, processing takes about 1.5 times the length of the recording.
 Slower processors need more.</p>
 <p>The estimates (ETAs) improve with use: after every transcription the program records the real timings of
-your PC. On first use, if the Whisper model was not downloaded during installation, a few minutes of
-download are added.</p>
+your PC. On first use, if the models were not downloaded during installation, a few minutes of
+download are added (Whisper up to 3 GB, the language model 4 GB).</p>
 
 <h2 id="data">10. Where the data is</h2>
 <table>
   <tr><th>What</th><th>Where</th></tr>
   <tr><td>Program</td><td>Windows: <code>%LOCALAPPDATA%\Programs\Neon Minutes</code><br>Linux: <code>~/.local/lib/neon-minutes</code></td></tr>
   <tr><td>Voice library, glossary, timings, error log</td><td>Windows: <code>%LOCALAPPDATA%\Neon Minutes</code><br>Linux: <code>~/.local/share/neon-minutes</code></td></tr>
-  <tr><td>Downloaded Whisper models</td><td>the <code>modelli</code> subfolder of the data folder</td></tr>
+  <tr><td>Downloaded models (Whisper, language model)</td><td>the <code>modelli</code> subfolder of the data folder</td></tr>
   <tr><td>Transcripts</td><td><code>Trascrizioni</code> folder next to each video</td></tr>
 </table>
 <p>On Windows, to open one of these folders paste the path in File Explorer's address bar.</p>
@@ -301,14 +331,20 @@ people concerned.</p>
 <p>Check the connection and retry from <strong>Start → Neon Minutes → Ripara componenti</strong> (on Linux:
 <code>neon-minutes --ripara</code>). The error details are in <code>install.log</code>, in the program
 folder. Behind an authenticated corporate proxy, ask IT to allow <code>pypi.org</code>,
-<code>files.pythonhosted.org</code>, <code>download.pytorch.org</code> and <code>huggingface.co</code>.</p>
+<code>files.pythonhosted.org</code>, <code>download.pytorch.org</code>, <code>huggingface.co</code>,
+<code>github.com</code> and <code>*.githubusercontent.com</code> (the language model).</p>
 <h3>I have an NVIDIA GPU but the program uses the CPU</h3>
 <p>The card must be Turing or newer, with at least 4 GB of memory and driver 570 or later. Update the
 driver from <a href="https://www.nvidia.com/drivers">nvidia.com/drivers</a>, then run
 <strong>Ripara componenti</strong>: it installs the GPU build if the card is now suitable.</p>
 <h3>No names, only "Speaker 1", "Speaker 2"</h3>
-<p>The video is not a Teams recording, or nobody was highlighted while speaking. Fix the names in
-<code>speakers.json</code> (section 7): from the next time, the voice library will recognise them.</p>
+<p>The video is not a Teams recording, or nobody was highlighted while speaking, and nobody was called by
+name. Fix the names in <code>speakers.json</code> (section 7): from the next time, the voice library will
+recognise them.</p>
+<h3>"modello linguistico non disponibile" in the log</h3>
+<p>The language model could not be downloaded (connection, proxy, disk full): the transcript is made
+anyway, without names from what is said and without a title. Processing the recording again retries the
+download.</p>
 <h3>One person was split into two voices, or two people were merged</h3>
 <p>In the first case give both voices the same name in <code>speakers.json</code>. In the second, with the
 <a href="#command-line">command line</a> you can give the number of participants with
@@ -333,6 +369,10 @@ driver from <a href="https://www.nvidia.com/drivers">nvidia.com/drivers</a>, the
   <tr><td><code>--cpu</code></td><td>do not use the GPU</td></tr>
   <tr><td><code>--out FOLDER</code></td><td>save the results somewhere else</td></tr>
   <tr><td><code>--language en</code></td><td>meeting language (default <code>it</code>); <code>auto</code> lets Whisper detect it</td></tr>
+  <tr><td><code>--participants "Anna Neri, Luca Bianchi"</code></td><td>the participants list</td></tr>
+  <tr><td><code>--title-folder</code></td><td>results folder named "date + title from the content"</td></tr>
+  <tr><td><code>--no-content-names</code></td><td>do not recognise speakers from what they say</td></tr>
+  <tr><td><code>--redo content</code></td><td>reads the transcript for names again (also with the other steps above)</td></tr>
 </table>
 
 <h2 id="uninstall">14. Uninstalling</h2>
@@ -347,13 +387,14 @@ the voice library too; the transcripts next to the videos stay where they are.</
 copy, modify and redistribute it for any purpose, commercial included, with no obligations. Full text in
 <code>LICENSE.txt</code>, in the program folder.</p>
 <p>It relies on third-party open-source components, each with its own licence: Python (PSF), PyTorch (BSD),
-faster-whisper and CTranslate2 (MIT), OpenAI's Whisper models (MIT), pyannote.audio (MIT), the pyannote
+faster-whisper and CTranslate2 (MIT), OpenAI's Whisper models (MIT), the Qwen3-4B language model (Apache 2.0,
+© Alibaba Cloud, converted to CTranslate2), pyannote.audio (MIT), the pyannote
 speaker-diarization-community-1 model (CC BY 4.0, © pyannoteAI, included unmodified), RapidOCR and OpenCV
 (Apache 2.0), PyAV with FFmpeg, sv-ttk and many others. The full list, with attributions, is in
 <code>THIRD-PARTY-NOTICES.txt</code>.</p>
 </main>
 <footer>
-  <div class="wrap">Neon Minutes 1.5.1 · MIT-0 licence · <a href="https://github.com/battles5/neon-minutes">github.com/battles5/neon-minutes</a></div>
+  <div class="wrap">Neon Minutes 1.6.0 · MIT-0 licence · <a href="https://github.com/battles5/neon-minutes">github.com/battles5/neon-minutes</a></div>
 </footer>
 </body>
 </html>

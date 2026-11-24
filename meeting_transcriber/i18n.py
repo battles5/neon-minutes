@@ -27,8 +27,8 @@ MEETING_LANGUAGES = ("auto", "it", "en", "es", "fr", "pt", "zh")
 T = {
     # --- window ---
     "add_videos": {
-        "en": "Add videos{dots}", "it": "Aggiungi video{dots}", "es": "Añadir vídeos{dots}",
-        "fr": "Ajouter des vidéos{dots}", "pt": "Adicionar vídeos{dots}", "zh": "添加视频{dots}"},
+        "en": "Add recordings{dots}", "it": "Aggiungi registrazioni{dots}", "es": "Añadir grabaciones{dots}",
+        "fr": "Ajouter des enregistrements{dots}", "pt": "Adicionar gravações{dots}", "zh": "添加录音{dots}"},
     "start_all": {
         "en": "Start all", "it": "Avvia tutti", "es": "Iniciar todos",
         "fr": "Tout lancer", "pt": "Iniciar todos", "zh": "全部开始"},
@@ -46,12 +46,41 @@ T = {
         "en": "Meeting language", "it": "Lingua della riunione", "es": "Idioma de la reunión",
         "fr": "Langue de la réunion", "pt": "Idioma da reunião", "zh": "会议语言"},
     "meeting_language_hint": {
-        "en": "applies to every video not started yet; a single row can then be changed with its own menu",
-        "it": "vale per tutti i video non ancora avviati; poi si può cambiare una singola riga dal suo menu",
-        "es": "se aplica a todos los vídeos aún no iniciados; luego cada fila se puede cambiar con su menú",
-        "fr": "s'applique à toutes les vidéos pas encore lancées ; chaque ligne se modifie ensuite avec son menu",
-        "pt": "vale para todos os vídeos ainda não iniciados; depois cada linha pode ser mudada no seu menu",
-        "zh": "适用于所有尚未开始的视频；之后可用每一行自己的菜单单独修改"},
+        "en": "applies to every recording not started yet; a single row can then be changed with its own menu",
+        "it": "vale per tutte le registrazioni non ancora avviate; poi si può cambiare una singola riga dal suo menu",
+        "es": "se aplica a todas las grabaciones aún no iniciadas; luego cada fila se puede cambiar con su menú",
+        "fr": "s'applique à tous les enregistrements pas encore lancés ; chaque ligne se modifie ensuite avec son menu",
+        "pt": "vale para todas as gravações ainda não iniciadas; depois cada linha pode ser mudada no seu menu",
+        "zh": "适用于所有尚未开始的录音；之后可用每一行自己的菜单单独修改"},
+    "participants": {
+        "en": "Participants", "it": "Partecipanti", "es": "Participantes",
+        "fr": "Participants", "pt": "Participantes", "zh": "参会者"},
+    "participants_hint": {
+        "en": "optional, separated by commas (e.g. from the invitation): Whisper spells them right and voices "
+              "called by first name get the full name. Applies to every recording not started yet",
+        "it": "facoltativo, separati da virgole (per esempio dall'invito): Whisper li scrive giusti e le voci "
+              "chiamate per nome ricevono nome e cognome. Vale per le registrazioni non ancora avviate",
+        "es": "opcional, separados por comas (por ejemplo, de la invitación): Whisper los escribe bien y las voces "
+              "llamadas por su nombre reciben nombre y apellido. Vale para las grabaciones aún no iniciadas",
+        "fr": "facultatif, séparés par des virgules (par exemple depuis l'invitation) : Whisper les écrit bien et "
+              "les voix appelées par leur prénom reçoivent prénom et nom. Vaut pour les enregistrements pas encore lancés",
+        "pt": "opcional, separados por vírgulas (por exemplo, do convite): o Whisper escreve-os bem e as vozes "
+              "chamadas pelo nome recebem nome e sobrenome. Vale para as gravações ainda não iniciadas",
+        "zh": "可选，用逗号分隔（例如从会议邀请中复制）：Whisper 会正确拼写，按名字称呼的声音会得到全名。"
+              "适用于所有尚未开始的录音"},
+    "content_names": {
+        "en": "Recognise speakers from what they say", "it": "Riconosci chi parla da quello che dice",
+        "es": "Reconocer a los hablantes por lo que dicen", "fr": "Reconnaître les intervenants d'après ce qu'ils disent",
+        "pt": "Reconhecer quem fala pelo que diz", "zh": "根据发言内容识别说话人"},
+    "folder_name": {
+        "en": "Results folder", "it": "Cartella dei risultati", "es": "Carpeta de resultados",
+        "fr": "Dossier des résultats", "pt": "Pasta de resultados", "zh": "结果文件夹"},
+    "folder_file": {
+        "en": "name of the recording", "it": "nome della registrazione", "es": "nombre de la grabación",
+        "fr": "nom de l'enregistrement", "pt": "nome da gravação", "zh": "录音文件名"},
+    "folder_title": {
+        "en": "date + title from the content", "it": "data + titolo dal contenuto", "es": "fecha + título del contenido",
+        "fr": "date + titre tiré du contenu", "pt": "data + título do conteúdo", "zh": "日期 + 根据内容生成的标题"},
     "checking_hardware": {
         "en": "Checking the hardware{dots}", "it": "Verifica dell'hardware{dots}",
         "es": "Comprobando el hardware{dots}", "fr": "Vérification du matériel{dots}",
@@ -65,9 +94,12 @@ T = {
         "zh": "pyannote 模型不可用：将只根据视频判断说话人（准确度较低）。请参阅指南。"},
     "total": {"en": "Total", "it": "Totale", "es": "Total", "fr": "Total", "pt": "Total", "zh": "总计"},
     "empty_list": {
-        "en": "No videos in the list: use \"{add}\".", "it": "Nessun video in coda: usa \"{add}\".",
-        "es": "No hay vídeos en la lista: usa \"{add}\".", "fr": "Aucune vidéo dans la liste : utilisez \"{add}\".",
-        "pt": "Nenhum vídeo na lista: use \"{add}\".", "zh": "列表中没有视频：请使用“{add}”。"},
+        "en": "No recordings in the list (videos or audio files): use \"{add}\".",
+        "it": "Nessuna registrazione in coda (video o file audio): usa \"{add}\".",
+        "es": "No hay grabaciones en la lista (vídeos o archivos de audio): usa \"{add}\".",
+        "fr": "Aucun enregistrement dans la liste (vidéos ou fichiers audio) : utilisez \"{add}\".",
+        "pt": "Nenhuma gravação na lista (vídeos ou arquivos de áudio): use \"{add}\".",
+        "zh": "列表中没有录音（视频或音频文件）：请使用“{add}”。"},
     "pick_title": {
         "en": "Add one or more recordings", "it": "Aggiungi una o più registrazioni",
         "es": "Añade una o más grabaciones", "fr": "Ajouter un ou plusieurs enregistrements",
@@ -123,8 +155,8 @@ T = {
         "en": "{stage} {pct} · ETA {eta}", "it": "{stage} {pct} · ETA {eta}", "es": "{stage} {pct} · ETA {eta}",
         "fr": "{stage} {pct} · ETA {eta}", "pt": "{stage} {pct} · ETA {eta}", "zh": "{stage} {pct} · 剩余 {eta}"},
     "total_done": {
-        "en": "all done ({n} videos)", "it": "tutto fatto ({n} video)", "es": "todo hecho ({n} vídeos)",
-        "fr": "tout est terminé ({n} vidéos)", "pt": "tudo concluído ({n} vídeos)", "zh": "全部完成（{n} 个视频）"},
+        "en": "all done ({n} recordings)", "it": "tutto fatto ({n} registrazioni)", "es": "todo hecho ({n} grabaciones)",
+        "fr": "tout est terminé ({n} enregistrements)", "pt": "tudo concluído ({n} gravações)", "zh": "全部完成（{n} 个录音）"},
     "total_estimating": {
         "en": "{n} to do · estimating{dots}", "it": "{n} da fare · calcolo della stima{dots}",
         "es": "{n} pendientes · calculando la estimación{dots}", "fr": "{n} à faire · calcul de l'estimation{dots}",
@@ -148,6 +180,10 @@ T = {
     "stage_asr": {
         "en": "transcribing", "it": "trascrizione", "es": "transcribiendo",
         "fr": "transcription", "pt": "transcrevendo", "zh": "转写"},
+    "stage_content": {
+        "en": "names from content", "it": "nomi dal contenuto", "es": "nombres del contenido",
+        "fr": "noms du contenu", "pt": "nomes do conteúdo", "zh": "从内容识别姓名"},
+    "stage_title": {"en": "title", "it": "titolo", "es": "título", "fr": "titre", "pt": "título", "zh": "标题"},
     "stage_fatto": {"en": "done", "it": "fatto", "es": "hecho", "fr": "terminé", "pt": "concluído", "zh": "完成"},
     # --- hardware ---
     "hw_fast": {
@@ -240,6 +276,37 @@ T = {
         "en": "Voice library updated: {names}", "it": "Libreria voci aggiornata: {names}",
         "es": "Biblioteca de voces actualizada: {names}", "fr": "Bibliothèque de voix mise à jour : {names}",
         "pt": "Biblioteca de vozes atualizada: {names}", "zh": "声纹库已更新：{names}"},
+    "log_lm_download": {
+        "en": "Downloading the language model ({gb} GB, first time only)...",
+        "it": "Scarico il modello linguistico ({gb} GB, solo la prima volta)...",
+        "es": "Descargando el modelo de lenguaje ({gb} GB, solo la primera vez)...",
+        "fr": "Téléchargement du modèle de langue ({gb} Go, la première fois seulement)...",
+        "pt": "Baixando o modelo de linguagem ({gb} GB, só na primeira vez)...",
+        "zh": "正在下载语言模型（{gb} GB，仅首次）..."},
+    "log_lm_failed": {
+        "en": "  language model not available ({error}): names from content and title skipped",
+        "it": "  modello linguistico non disponibile ({error}): niente nomi dal contenuto né titolo",
+        "es": "  modelo de lenguaje no disponible ({error}): sin nombres del contenido ni título",
+        "fr": "  modèle de langue indisponible ({error}) : ni noms du contenu ni titre",
+        "pt": "  modelo de linguagem indisponível ({error}): sem nomes do conteúdo nem título",
+        "zh": "  语言模型不可用（{error}）：跳过从内容识别姓名和标题"},
+    "log_content": {
+        "en": "Recognising speakers from what they say ({device})...",
+        "it": "Riconoscimento di chi parla da quello che dice ({device})...",
+        "es": "Reconociendo a los hablantes por lo que dicen ({device})...",
+        "fr": "Reconnaissance des intervenants d'après ce qu'ils disent ({device})...",
+        "pt": "Reconhecendo quem fala pelo que diz ({device})...",
+        "zh": "正在根据发言内容识别说话人（{device}）..."},
+    "log_content_done": {
+        "en": "  {n} names found in {s}s", "it": "  {n} nomi trovati in {s}s", "es": "  {n} nombres encontrados en {s}s",
+        "fr": "  {n} noms trouvés en {s}s", "pt": "  {n} nomes encontrados em {s}s", "zh": "  找到 {n} 个姓名，用时 {s} 秒"},
+    "log_title": {
+        "en": "Meeting title: {title}", "it": "Titolo della riunione: {title}", "es": "Título de la reunión: {title}",
+        "fr": "Titre de la réunion : {title}", "pt": "Título da reunião: {title}", "zh": "会议标题：{title}"},
+    "log_rename_failed": {
+        "en": "  the folder keeps its name: {error}", "it": "  la cartella resta col suo nome: {error}",
+        "es": "  la carpeta conserva su nombre: {error}", "fr": "  le dossier garde son nom : {error}",
+        "pt": "  a pasta mantém o nome: {error}", "zh": "  文件夹保留原名：{error}"},
     "log_done": {
         "en": "Done in {s}s -> {path}", "it": "Fatto in {s}s -> {path}", "es": "Hecho en {s}s -> {path}",
         "fr": "Terminé en {s}s -> {path}", "pt": "Concluído em {s}s -> {path}", "zh": "完成，用时 {s} 秒 -> {path}"},
@@ -314,6 +381,17 @@ def set_meeting_language(code: str):
     if code in MEETING_LANGUAGES:
         _load()["meeting_language"] = code
         _save()
+
+
+def setting(key: str, default):
+    """Another saved choice of the window (names from content, folder name)."""
+    value = _load().get(key, default)
+    return value if isinstance(value, type(default)) else default
+
+
+def set_setting(key: str, value):
+    _load()[key] = value
+    _save()
 
 
 def t(key: str, lang: str | None = None, **values) -> str:

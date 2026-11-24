@@ -70,6 +70,7 @@ $sizeDefines = @(
     "/DDlTorchCuda=$(MB $sizes.download.torch.cuda)", "/DDlTorchCpu=$(MB $sizes.download.torch.cpu)",
     "/DDlDeps=$(MB $sizes.download.deps)",
     "/DDlModelCuda=$(MB $sizes.download.whisper.cuda)", "/DDlModelCpu=$(MB $sizes.download.whisper.cpu)",
+    "/DDlLm=$(MB $sizes.download.lm)",
     "/DInstCuda=$(MB $sizes.installed.cuda)", "/DInstCpu=$(MB $sizes.installed.cpu)"
 )
 Copy-Utf8Bom "$PSScriptRoot\setup.iss" "$build\setup.iss"

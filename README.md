@@ -25,8 +25,9 @@
 
 ---
 
-Take the recording of a meeting (for example the `.mp4` downloaded from Microsoft Teams) and get
-a transcript split by speaker turn, with each participant's name whenever the video shows it.
+Take the recording of a meeting (the `.mp4` downloaded from Microsoft Teams, or just an audio
+recording from your phone) and get a transcript split by speaker turn, with each participant's
+name whenever the video shows it or the people in the meeting say it.
 No account, no cloud service: audio, video and transcripts never leave your computer.
 
 ```
@@ -60,6 +61,15 @@ No account, no cloud service: audio, video and transcripts never leave your comp
     is sharing the screen;
   - an estimate of the delay with which Teams lights up the highlight;
   - a second pass for people that pyannote splits into two voices.
+- **Names from what people say**, for audio recordings and for voices the video cannot name: a
+  local language model ([Qwen3-4B](https://huggingface.co/Qwen/Qwen3-4B)) reads the transcript and
+  works out who is who from self-introductions ("I'm Anna Neri"), handovers ("Luca, over to
+  you") and thanks to the previous speaker. Voices it cannot name for sure get a hint by
+  elimination (`Speaker 2 (forse: Luca)`).
+- **Participants list** (optional): paste the names from the invitation. Whisper spells them
+  right, and a voice called "Giulia" in the meeting gets the full name "Giulia Rossi".
+- **Results folder named after the meeting**, if you like: `2026-03-12 Kick-off with Acme` instead
+  of the file name, with a title the language model writes from the first minutes.
 - **Voice library**: people recognised in one meeting are recognised in the next ones too, even
   without video.
 - **One-second corrections**: change a name in `speakers.json` and the transcript is regenerated
@@ -67,8 +77,8 @@ No account, no cloud service: audio, video and transcripts never leave your comp
 - **Glossary** of technical terms, acronyms and project names to spell correctly. Participant
   names read from the video are added automatically.
 - **Outputs**: readable Markdown, SRT and WebVTT subtitles, word-level JSON with timestamps.
-- **Simple window with a queue**: add videos whenever you like, even while one is being
-  processed, or drop them on the icon. Start the whole queue or a single video. Every video has its
+- **Simple window with a queue**: add videos or audio files whenever you like, even while one is
+  being processed, or drop them on the icon. Start the whole queue or a single video. Every video has its
   own progress bar and estimated time left (ETA), plus a total ETA for everything still to do,
   updated at every addition. Estimates improve with use. Light or dark theme, like the system.
   A command line is there for power users.
@@ -88,13 +98,14 @@ No account, no cloud service: audio, video and transcripts never leave your comp
 | Graphics card | NVIDIA with at least **4 GB** of VRAM, **Turing or newer** architecture (compute capability 7.5+): GTX 1650 and later, RTX 20xx/30xx/40xx/50xx, Quadro RTX, RTX A-series, RTX Ada | any (Intel, AMD, older NVIDIA) |
 | Driver | NVIDIA **570** or later | — |
 | RAM | 8 GB (16 GB recommended) | 8 GB (16 GB recommended) |
-| Downloaded during installation | about 6 GB (Linux: 7.5 GB) | about 2 GB |
-| Disk | about 9 GB, up to 12 GB during installation (Linux: 11 GB, up to 15) | about 3 GB (Linux: 4 GB) |
+| Downloaded during installation | about 10 GB (Linux: 11.5 GB) | about 6 GB |
+| Disk | about 13 GB, up to 16 GB during installation (Linux: 15 GB, up to 19) | about 7 GB (Linux: 8 GB) |
 | Whisper model | large-v3 | large-v3-turbo |
+| Language model (names from content, titles) | Qwen3-4B int8, 4 GB, on the GPU with 6 GB of VRAM or more | the same, on the CPU |
 | One hour of meeting | **about 12-15 minutes** | about 1.5 hours on a fast processor, 2-3 hours on an office laptop |
 
-Internet is needed only during installation, to download PyTorch, the libraries and the Whisper
-model. The installer checks the graphics card and picks the right build by itself; before it
+Internet is needed only during installation, to download PyTorch, the libraries and the models
+(Whisper and the language model; both can also be left for the first use). The installer checks the graphics card and picks the right build by itself; before it
 starts, it shows how much it will download, how much space it needs and how long it will take.
 At every start the program chooses GPU or CPU.
 
@@ -147,17 +158,22 @@ the command `~/.local/bin/neon-minutes`:
 | `neon-minutes --disinstalla` | removes the program; asks whether to keep models and voice library |
 
 Installer options: `--cli` (terminal only), `-y` (no questions), `--cpu` (CPU build even with an
-NVIDIA GPU), `--no-models` (download Whisper at first use), `--no-desktop` (no desktop shortcut).
+NVIDIA GPU), `--no-models` (download the models at first use), `--no-desktop` (no desktop shortcut).
 
 ## Usage
 
 1. Open **Neon Minutes**.
 2. Pick the **Meeting language** (it starts as *Detect automatically*; or Italian, English, Spanish, French, Portuguese, Chinese;
    it also changes the videos already in the list that have not started). The **Interface** menu on the right changes the window's language.
-3. Click **Add videos…** and pick one or more recordings (mp4, mkv, mov, avi, webm, or audio only:
-   m4a, mp3, wav, ogg). You can add more at any time. Each row shows the video's language
-   (IT, EN, ...), which you can change until it starts.
-4. Click **Start all**, or **▶** on the row of a single video. **✕** removes a video from the
+3. Optionally, paste the **Participants** (for example from the invitation, separated by commas).
+   Like the language, they apply to the recordings not started yet.
+4. Leave **Recognise speakers from what they say** ticked to name the voices the video cannot
+   (all of them, in an audio recording). Under **Results folder** choose *name of the recording*
+   or *date + title from the content*.
+5. Click **Add recordings…** and pick one or more recordings (mp4, mkv, mov, avi, webm, or audio
+   only: m4a, mp3, wav, ogg, flac, aac, opus, wma). You can add more at any time. Each row shows
+   the recording's language (IT, EN, ...), which you can change until it starts.
+6. Click **Start all**, or **▶** on the row of a single video. **✕** removes a video from the
    list. Videos are processed one at a time, in queue order. On Linux the two row buttons read
    **Start** and **Remove**.
 
@@ -174,6 +190,9 @@ Trascrizioni\
     speakers.json       who is who: can be corrected by hand
     _lavoro\            intermediate results (cache)
 ```
+
+With *date + title from the content* the folder is called, for example, `2026-03-12 Kick-off with
+Acme`; processing the recording again finds it under its new name.
 
 To **fix a name**, change `"name"` in `speakers.json` and process the video again: only the
 `trascrizione.*` files are regenerated. All the details are in the [user guide](docs/Guide.html),
@@ -192,21 +211,34 @@ flowchart LR
     P --> N[Voice-name matching<br>contrast, delay, split voices]
     O --> N
     L[(Voice library)] <--> N
+    W --> Q[Language model<br>names from what is said, title]
+    P --> Q
+    Q --> N
     W --> R[Word attribution<br>and boundary fixes]
     N --> R
     R --> OUT[Markdown · SRT · VTT · JSON]
 ```
 
 Reading the video runs on the CPU while the GPU separates the voices. The names read from the
-video go into Whisper's prompt, so it spells them correctly. Every step saves its own result in
+video and the participants list go into Whisper's prompt, so it spells them correctly. For the
+voices still without a name, the language model reads the transcript: every time a name is said it
+looks at that turn with the one before and the one after and decides whether the name belongs to
+the previous speaker, the one talking, the next one or someone else. Clear phrases ("sono X",
+"grazie X", "X, a te la parola", in the six languages) settle most cases; the evidence is then
+summed per voice and each name goes to one voice only. Every step saves its own result in
 `_lavoro\`: processing a video again only redoes what is missing.
 
 ## Limitations
 
-- **Names are read only from Teams recordings**, which show the purple box on the speaker's name.
-  Screen captures of the live Teams client signal the speaker differently, and Zoom and Meet are
-  not supported. In those cases the voices are still separated, and names come from the voice
-  library or from manual correction.
+- **Names are read from the video only in Teams recordings**, which show the purple box on the
+  speaker's name. Screen captures of the live Teams client signal the speaker differently, and
+  Zoom and Meet are not supported. In those cases names come from the voice library, from what
+  people say, or from manual correction.
+- **Names from what people say need someone to say them.** A person who never introduces
+  themself and is never called by name stays a "Speaker N", at most with a hint by elimination.
+  Without the participants list, a voice only called "Giulia" is named "Giulia". Tested on one
+  100-minute Italian meeting (four main voices: two named for sure, two by elimination, all
+  correct) and on synthetic clips.
 - **People sharing one microphone** (a meeting room, for example) cannot be told apart by the
   video, only by their voices.
 - **Overlapping speech** is attributed to one person at a time.
@@ -232,6 +264,7 @@ On a laptop with an NVIDIA RTX 2000 Ada (8 GB) and an Intel Core i7-14700HX:
 |---|---|---|---|
 | Stand-up | 13:17 | 2:25 | |
 | Stand-up | 25:39 | 5:52 | voices 1:18 and names 2:01 in parallel, transcription 3:50 |
+| Meeting, audio only (phone) | 1:39:41 | about 20:00 | names from what is said: 15 s (CPU: 6 minutes) |
 
 In CPU mode, on the same processor, Whisper large-v3-turbo takes about 0.8 times the audio length
 and speaker separation about 0.65 times.
@@ -242,7 +275,7 @@ and speaker separation about 0.65 times.
 |---|---|---|
 | Program | `%LOCALAPPDATA%\Programs\Neon Minutes` | `~/.local/lib/neon-minutes` |
 | Voice library, glossary, timings, logs | `%LOCALAPPDATA%\Neon Minutes` | `~/.local/share/neon-minutes` |
-| Downloaded Whisper models | `…\Neon Minutes\modelli` | `~/.local/share/neon-minutes/modelli` |
+| Downloaded models (Whisper, language model) | `…\Neon Minutes\modelli` | `~/.local/share/neon-minutes/modelli` |
 | Transcripts | `Trascrizioni` folder next to each video | same |
 
 The program connects to the Internet only to download its components. When uninstalling you can
@@ -265,6 +298,13 @@ In development the pyannote model is downloaded from Hugging Face, after accepti
 on the [model page](https://huggingface.co/pyannote/speaker-diarization-community-1). The
 installers include it instead (CC BY 4.0 licence), so users need no token.
 
+The language model is downloaded at first use from the
+[`modelli-2`](https://github.com/battles5/neon-minutes/releases/tag/modelli-2) release (4 GB, in
+parts below GitHub's 2 GB limit, checked with SHA-256), or taken from the folder in `NEON_LM_DIR`.
+`installer\convert_lm.py` makes that release from [Qwen/Qwen3-4B](https://huggingface.co/Qwen/Qwen3-4B).
+The logic of the names from content is tested without the model by
+`python tests\test_content_names.py`.
+
 **Building the Windows setup** (needs [Inno Setup 6](https://jrsoftware.org/isinfo.php):
 `winget install JRSoftware.InnoSetup --scope user`):
 
@@ -281,8 +321,8 @@ The script:
 4. pins the exact dependency versions from the `.venv` (`requirements-lock.txt`);
 5. writes the third-party notices and compiles `dist\NeonMinutes-Setup-<version>.exe`.
 
-PyTorch (CUDA or CPU build) and Whisper are downloaded on the user's PC during installation, by
-`installer\postinstall.py`.
+PyTorch (CUDA or CPU build), Whisper and the language model are downloaded on the user's PC
+during installation, by `installer\postinstall.py`.
 
 **The Linux installer** is built by GitHub Actions ([`.github/workflows/linux.yml`](.github/workflows/linux.yml))
 for every `v*` tag, or by hand from the *Actions* tab. The workflow:
@@ -292,8 +332,9 @@ for every `v*` tag, or by hand from the *Actions* tab. The workflow:
    release, so CI needs no token;
 3. assembles the self-extracting `.run` with `installer/build_linux.sh`: portable Python, program,
    model, guide, plus the `installer/linux_setup.py` wizard;
-4. tests it on an empty home: installation, transcription of a synthesised sentence, the window and
-   the wizard on a virtual display, uninstallation;
+4. tests it on an empty home: installation, transcription of synthesised sentences (a speaker
+   named from what is said, a folder named after the meeting), the window and the wizard on a
+   virtual display, uninstallation;
 5. attaches it to the tag's release.
 
 ```
@@ -307,6 +348,9 @@ meeting_transcriber/
   diarize.py        pyannote
   asr.py            faster-whisper
   naming.py         voice-name matching
+  content_names.py  names from what people say
+  titles.py         meeting title for the results folder
+  lm.py             the local language model (download, GPU/CPU, questions)
   voices.py         voice library
   render.py         words → turns, Markdown/SRT/VTT/JSON
   hardware.py       GPU/CPU choice
@@ -328,6 +372,7 @@ Third-party components keep their own licences. The main ones:
 | Component | Licence |
 |---|---|
 | Whisper (OpenAI models), faster-whisper, CTranslate2 | MIT |
+| Qwen3-4B (downloaded, converted to CTranslate2 int8) | Apache-2.0, © Alibaba Cloud |
 | pyannote.audio | MIT |
 | pyannote speaker-diarization-community-1 (included in the installers, unmodified) | CC BY 4.0, © pyannoteAI |
 | PyTorch | BSD-3-Clause |

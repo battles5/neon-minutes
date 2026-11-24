@@ -36,6 +36,13 @@ pyannote speaker-diarization-community-1 (speaker separation model)
 Whisper large-v3 and large-v3-turbo models (OpenAI, CTranslate2 conversion for
 faster-whisper). Licence: MIT. https://github.com/openai/whisper
 
+Qwen3-4B language model (Alibaba Cloud, Qwen team), used to recognise speakers
+from what they say and to title meetings. Licence: Apache License 2.0,
+https://www.apache.org/licenses/LICENSE-2.0 (the full text comes with the model,
+in the LICENSE file of its folder). Source: https://huggingface.co/Qwen/Qwen3-4B
+Modified: converted to CTranslate2 with int8 weights (NOTICE.txt in the model's
+folder), and downloaded from the "modelli-2" release of the Neon Minutes repository.
+
 PyTorch for CUDA includes NVIDIA CUDA/cuDNN libraries distributed by NVIDIA under
 the terms of the NVIDIA Software License for redistributable components.
 
